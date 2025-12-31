@@ -28,11 +28,14 @@ export interface ParsedRecipe {
 // Sanitize input text
 function sanitizeInput(text: string): string {
   // Remove HTML tags
-  const withoutHtml = text.replace(/<[^>]*>/g, '');
+  let cleaned = text.replace(/<[^>]*>/g, '');
   // Remove URLs
-  const withoutUrls = withoutHtml.replace(/https?:\/\/[^\s]+/g, '');
+  cleaned = cleaned.replace(/https?:\/\/[^\s]+/g, '');
+  // Remove checkbox-style characters: ▢, □, ☐, ☑, ☒, [x], [ ], - [ ], - [x], etc.
+  cleaned = cleaned.replace(/^[\s]*[-*]?\s*(\[[ xX]?\]|▢|□|☐|☑|☒)\s*/gm, '');
+  cleaned = cleaned.replace(/[\u25A2\u25A1\u2610\u2611\u2612]/g, '');
   // Normalize whitespace
-  return withoutUrls.replace(/\s+/g, ' ').trim();
+  return cleaned.replace(/\s+/g, ' ').trim();
 }
 
 // Check if a line is a section header

@@ -67,6 +67,11 @@ export function getCompatibleUnits(unitKey: string): string[] {
     .map(([key]) => key);
 }
 
+// Get all available units (for ingredients without a recognized unit)
+export function getAllUnits(): string[] {
+  return Object.keys(UNITS);
+}
+
 // Common fractions for display
 const FRACTION_MAP: [number, string][] = [
   [0.125, '⅛'],

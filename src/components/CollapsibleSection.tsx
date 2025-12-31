@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Pencil, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -11,21 +11,21 @@ interface CollapsibleSectionProps {
   testId?: string;
 }
 
-export function CollapsibleSection({
+export const CollapsibleSection = forwardRef<HTMLDivElement, CollapsibleSectionProps>(function CollapsibleSection({
   title,
   placeholder,
   value,
   onChange,
   renderContent,
   testId,
-}: CollapsibleSectionProps) {
+}, ref) {
   const [isExpanded, setIsExpanded] = useState(!!value);
   const [isEditing, setIsEditing] = useState(false);
 
   const hasContent = !!value || (renderContent && value);
 
   return (
-    <div className="glass-card overflow-hidden" data-testid={testId}>
+    <div className="glass-card overflow-hidden" data-testid={testId} ref={ref}>
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -93,4 +93,4 @@ export function CollapsibleSection({
       </AnimatePresence>
     </div>
   );
-}
+});
