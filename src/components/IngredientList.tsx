@@ -1,3 +1,4 @@
+import React, { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import type { ParsedSection } from '@/lib/parser';
 import { IngredientRow } from './IngredientRow';
@@ -10,19 +11,19 @@ interface IngredientListProps {
   onChangeUnit: (sectionId: string, ingredientId: string, newUnit: string) => void;
 }
 
-export function IngredientList({
+export const IngredientList = forwardRef<HTMLDivElement, IngredientListProps>(function IngredientList({
   sections,
   scale,
   useFractions,
   onToggleIngredient,
   onChangeUnit,
-}: IngredientListProps) {
+}, ref) {
   if (sections.length === 0) {
     return null;
   }
 
   return (
-    <div className="space-y-6" data-testid="ingredient-list">
+    <div className="space-y-6" data-testid="ingredient-list" ref={ref}>
       {sections.map((section, sectionIdx) => (
         <motion.div
           key={section.id}
@@ -49,4 +50,4 @@ export function IngredientList({
       ))}
     </div>
   );
-}
+});

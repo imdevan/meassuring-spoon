@@ -1,8 +1,8 @@
+import React, { forwardRef, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { UNITS, getCompatibleUnits, convertUnit, formatNumber } from '@/lib/units';
+import { UNITS, getCompatibleUnits, convertUnit, formatNumber, getAllUnits } from '@/lib/units';
 import type { ParsedIngredient } from '@/lib/parser';
 import { Check, ChevronDown } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
 
 interface IngredientRowProps {
   ingredient: ParsedIngredient;
@@ -12,13 +12,13 @@ interface IngredientRowProps {
   onUnitChange: (newUnit: string) => void;
 }
 
-export function IngredientRow({
+export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(function IngredientRow({
   ingredient,
   scale,
   useFractions,
   onToggleChecked,
   onUnitChange,
-}: IngredientRowProps) {
+}, ref) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +30,10 @@ export function IngredientRow({
     ? ingredient.parentheticalQuantity * scale 
     : null;
 
-  const compatibleUnits = ingredient.unit ? getCompatibleUnits(ingredient.unit) : [];
+  // Get compatible units if there's a recognized unit, otherwise show all units if there's a quantity
+  const compatibleUnits = ingredient.unit 
+    ? getCompatibleUnits(ingredient.unit) 
+    : (ingredient.quantity !== null ? getAllUnits() : []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -109,7 +112,7 @@ export function IngredientRow({
       </span>
 
       {/* Unit conversion dropdown */}
-      {compatibleUnits.length > 0 && (
+      {scaledQuantity !== null && compatibleUnits.length > 0 && (
         <div className="relative" ref={dropdownRef} data-dropdown>
           <button
             onClick={(e) => {
@@ -119,20 +122,22 @@ export function IngredientRow({
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             data-testid="unit-dropdown-trigger"
           >
-            <span>{UNITS[ingredient.unit!]?.name}</span>
+            <span>{ingredient.unit ? UNITS[ingredient.unit]?.name || ingredient.unit : 'Convert'}</span>
             <ChevronDown className="w-3 h-3" />
           </button>
 
           {isDropdownOpen && (
             <motion.div
-              className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-card z-50 min-w-[180px] py-1 overflow-hidden"
+              className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-card z-50 min-w-[180px] py-1 overflow-hidden max-h-64 overflow-y-auto"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
               {compatibleUnits.map(unitKey => {
                 const unitInfo = UNITS[unitKey];
-                const converted = convertUnit(scaledQuantity || 0, ingredient.unit!, unitKey);
+                const converted = ingredient.unit 
+                  ? convertUnit(scaledQuantity || 0, ingredient.unit, unitKey)
+                  : null;
                 
                 return (
                   <button
@@ -157,4 +162,4 @@ export function IngredientRow({
       )}
     </motion.div>
   );
-}
+});

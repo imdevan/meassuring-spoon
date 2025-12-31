@@ -119,14 +119,6 @@ export function Header({
             >
               {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </TooltipButton>
-
-            <TooltipButton
-              onClick={onOpenMenu}
-              tooltip="Open menu"
-              testId="header-menu-button"
-            >
-              <Menu className="w-4 h-4" />
-            </TooltipButton>
           </div>
 
           {/* Mobile menu button */}
