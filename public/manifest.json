@@ -1,0 +1,16 @@
+{
+  "name": "Measuring Spoon",
+  "short_name": "Measuring Spoon",
+  "description": "Easily scale and adjust recipe ingredients",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf9f7",
+  "theme_color": "#d97a8e",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
