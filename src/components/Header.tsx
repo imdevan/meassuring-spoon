@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Sun, Moon, Menu, Hash, Percent, Smartphone } from 'lucide-react';
+import { Sun, Moon, Hash, Percent, Coffee, RotateCcw } from 'lucide-react';
 import { ScaleDial } from './ScaleDial';
 
 interface HeaderProps {
@@ -12,8 +12,8 @@ interface HeaderProps {
   cookModeSupported: boolean;
   isDark: boolean;
   onToggleTheme: () => void;
-  onOpenMenu: () => void;
   hasRecipe: boolean;
+  onResetCheckboxes: () => void;
 }
 
 interface TooltipButtonProps {
@@ -54,8 +54,8 @@ export function Header({
   cookModeSupported,
   isDark,
   onToggleTheme,
-  onOpenMenu,
   hasRecipe,
+  onResetCheckboxes,
 }: HeaderProps) {
   return (
     <motion.header 
@@ -104,9 +104,17 @@ export function Header({
                     isActive={cookMode}
                     testId="header-cook-toggle"
                   >
-                    <Smartphone className="w-4 h-4" />
+                    <Coffee className="w-4 h-4" />
                   </TooltipButton>
                 )}
+
+                <TooltipButton
+                  onClick={onResetCheckboxes}
+                  tooltip="Reset checkboxes"
+                  testId="header-reset-toggle"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </TooltipButton>
 
                 <div className="w-px h-8 bg-border" />
               </motion.div>
@@ -121,7 +129,7 @@ export function Header({
             </TooltipButton>
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile controls */}
           <div className="flex md:hidden items-center gap-2">
             {hasRecipe && (
               <div className="flex items-center gap-2 mr-2">
@@ -133,9 +141,6 @@ export function Header({
               tooltip={isDark ? 'Light mode' : 'Dark mode'}
             >
               {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-            </TooltipButton>
-            <TooltipButton onClick={onOpenMenu} tooltip="Menu">
-              <Menu className="w-4 h-4" />
             </TooltipButton>
           </div>
         </div>
