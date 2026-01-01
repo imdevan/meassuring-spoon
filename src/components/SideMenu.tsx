@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sun, Moon, RotateCcw, Hash, Percent, Smartphone, Menu, Printer } from 'lucide-react';
+import { X, Sun, Moon, RotateCcw, Hash, Percent, Coffee, Printer, Trash2 } from 'lucide-react';
 import { ScaleDial } from './ScaleDial';
 
 interface SideMenuProps {
@@ -16,6 +16,8 @@ interface SideMenuProps {
   onToggleTheme: () => void;
   onReset: () => void;
   onPrint: () => void;
+  onClearRecipe: () => void;
+  isMobile: boolean;
 }
 
 export function SideMenu({
@@ -32,6 +34,8 @@ export function SideMenu({
   onToggleTheme,
   onReset,
   onPrint,
+  onClearRecipe,
+  isMobile,
 }: SideMenuProps) {
   return (
     <AnimatePresence>
@@ -77,74 +81,76 @@ export function SideMenu({
                 </div>
               </div>
 
-              {/* Toggles */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                  Display
-                </h3>
+              {/* Toggles - only show on mobile */}
+              {isMobile && (
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                    Display
+                  </h3>
 
-                {/* Fractions toggle */}
-                <button
-                  onClick={onToggleFractions}
-                  className="w-full flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                  data-testid="fractions-toggle"
-                >
-                  <div className="flex items-center gap-3">
-                    {useFractions ? <Hash className="w-5 h-5" /> : <Percent className="w-5 h-5" />}
-                    <span>{useFractions ? 'Fractions' : 'Decimals'}</span>
-                  </div>
-                  <div className={`w-12 h-7 rounded-full transition-colors ${useFractions ? 'bg-primary' : 'bg-muted'} p-1`}>
-                    <motion.div
-                      className="w-5 h-5 rounded-full bg-card shadow-sm"
-                      animate={{ x: useFractions ? 20 : 0 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    />
-                  </div>
-                </button>
-
-                {/* Theme toggle */}
-                <button
-                  onClick={onToggleTheme}
-                  className="w-full flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                  data-testid="theme-toggle"
-                >
-                  <div className="flex items-center gap-3">
-                    {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                    <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
-                  </div>
-                  <div className={`w-12 h-7 rounded-full transition-colors ${isDark ? 'bg-primary' : 'bg-muted'} p-1`}>
-                    <motion.div
-                      className="w-5 h-5 rounded-full bg-card shadow-sm"
-                      animate={{ x: isDark ? 20 : 0 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    />
-                  </div>
-                </button>
-
-                {/* Cook mode toggle */}
-                {cookModeSupported && (
+                  {/* Fractions toggle */}
                   <button
-                    onClick={onToggleCookMode}
+                    onClick={onToggleFractions}
                     className="w-full flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                    data-testid="cook-mode-toggle"
+                    data-testid="fractions-toggle"
                   >
                     <div className="flex items-center gap-3">
-                      <Smartphone className="w-5 h-5" />
-                      <div className="text-left">
-                        <span className="block">Cook Mode</span>
-                        <span className="text-xs text-muted-foreground">Keep screen awake</span>
-                      </div>
+                      {useFractions ? <Hash className="w-5 h-5" /> : <Percent className="w-5 h-5" />}
+                      <span>{useFractions ? 'Fractions' : 'Decimals'}</span>
                     </div>
-                    <div className={`w-12 h-7 rounded-full transition-colors ${cookMode ? 'bg-primary' : 'bg-muted'} p-1`}>
+                    <div className={`w-12 h-7 rounded-full transition-colors ${useFractions ? 'bg-primary' : 'bg-muted'} p-1`}>
                       <motion.div
                         className="w-5 h-5 rounded-full bg-card shadow-sm"
-                        animate={{ x: cookMode ? 20 : 0 }}
+                        animate={{ x: useFractions ? 20 : 0 }}
                         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                       />
                     </div>
                   </button>
-                )}
-              </div>
+
+                  {/* Theme toggle */}
+                  <button
+                    onClick={onToggleTheme}
+                    className="w-full flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
+                    data-testid="theme-toggle"
+                  >
+                    <div className="flex items-center gap-3">
+                      {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                      <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
+                    </div>
+                    <div className={`w-12 h-7 rounded-full transition-colors ${isDark ? 'bg-primary' : 'bg-muted'} p-1`}>
+                      <motion.div
+                        className="w-5 h-5 rounded-full bg-card shadow-sm"
+                        animate={{ x: isDark ? 20 : 0 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      />
+                    </div>
+                  </button>
+
+                  {/* Cook mode toggle */}
+                  {cookModeSupported && (
+                    <button
+                      onClick={onToggleCookMode}
+                      className="w-full flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
+                      data-testid="cook-mode-toggle"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Coffee className="w-5 h-5" />
+                        <div className="text-left">
+                          <span className="block">Cook Mode</span>
+                          <span className="text-xs text-muted-foreground">Keep screen awake</span>
+                        </div>
+                      </div>
+                      <div className={`w-12 h-7 rounded-full transition-colors ${cookMode ? 'bg-primary' : 'bg-muted'} p-1`}>
+                        <motion.div
+                          className="w-5 h-5 rounded-full bg-card shadow-sm"
+                          animate={{ x: cookMode ? 20 : 0 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        />
+                      </div>
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Actions */}
               <div className="space-y-4">
@@ -163,11 +169,20 @@ export function SideMenu({
 
                 <button
                   onClick={onReset}
-                  className="w-full flex items-center gap-3 p-4 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                  className="w-full flex items-center gap-3 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
                   data-testid="reset-button"
                 >
                   <RotateCcw className="w-5 h-5" />
                   <span>Reset Checkboxes</span>
+                </button>
+
+                <button
+                  onClick={onClearRecipe}
+                  className="w-full flex items-center gap-3 p-4 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                  data-testid="clear-recipe-button"
+                >
+                  <Trash2 className="w-5 h-5" />
+                  <span>Clear Recipe</span>
                 </button>
               </div>
             </div>

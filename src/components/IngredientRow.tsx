@@ -1,6 +1,6 @@
 import React, { forwardRef, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { UNITS, getCompatibleUnits, convertUnit, formatNumber, getAllUnits } from '@/lib/units';
+import { UNITS, getCompatibleUnits, convertUnit, formatNumber } from '@/lib/units';
 import type { ParsedIngredient } from '@/lib/parser';
 import { Check, ChevronDown } from 'lucide-react';
 
@@ -30,10 +30,9 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
     ? ingredient.parentheticalQuantity * scale 
     : null;
 
-  // Get compatible units if there's a recognized unit, otherwise show all units if there's a quantity
-  const compatibleUnits = ingredient.unit 
-    ? getCompatibleUnits(ingredient.unit) 
-    : (ingredient.quantity !== null ? getAllUnits() : []);
+  // Only show dropdown if ingredient has a recognized unit
+  const hasUnit = ingredient.unit !== null;
+  const compatibleUnits = hasUnit ? getCompatibleUnits(ingredient.unit!) : [];
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -111,8 +110,8 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
         {buildDisplayText()}
       </span>
 
-      {/* Unit conversion dropdown */}
-      {scaledQuantity !== null && compatibleUnits.length > 0 && (
+      {/* Unit conversion dropdown - only show if ingredient has a unit */}
+      {hasUnit && compatibleUnits.length > 0 && (
         <div className="relative" ref={dropdownRef} data-dropdown>
           <button
             onClick={(e) => {
@@ -122,7 +121,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
             className="flex items-center gap-1 px-2 py-1 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             data-testid="unit-dropdown-trigger"
           >
-            <span>{ingredient.unit ? UNITS[ingredient.unit]?.name || ingredient.unit : 'Convert'}</span>
+            <span>{UNITS[ingredient.unit!]?.name || ingredient.unit}</span>
             <ChevronDown className="w-3 h-3" />
           </button>
 
@@ -135,9 +134,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
             >
               {compatibleUnits.map(unitKey => {
                 const unitInfo = UNITS[unitKey];
-                const converted = ingredient.unit 
-                  ? convertUnit(scaledQuantity || 0, ingredient.unit, unitKey)
-                  : null;
+                const converted = convertUnit(scaledQuantity || 0, ingredient.unit!, unitKey);
                 
                 return (
                   <button

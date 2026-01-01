@@ -64,6 +64,7 @@ export function decodeRecipeFromHash(hash: string): { recipe: ParsedRecipe; scal
       })),
       notes: state.n || '',
       instructions: state.inst || [],
+      title: '',
     };
     
     return {
@@ -76,13 +77,37 @@ export function decodeRecipeFromHash(hash: string): { recipe: ParsedRecipe; scal
   }
 }
 
-// Update URL hash without reload
-export function updateUrlHash(hash: string): void {
-  const newUrl = hash ? `#${hash}` : window.location.pathname;
+// Update URL with optional title and hash
+export function updateUrlWithTitle(hash: string, title?: string): void {
+  let newUrl = window.location.pathname;
+  
+  if (title) {
+    // Clean title for URL
+    const cleanTitle = encodeURIComponent(title.trim());
+    newUrl += `?title=${cleanTitle}`;
+  }
+  
+  if (hash) {
+    newUrl += `#${hash}`;
+  }
+  
   window.history.replaceState(null, '', newUrl);
+}
+
+// Update URL hash without reload (legacy - kept for compatibility)
+export function updateUrlHash(hash: string): void {
+  const title = getUrlTitle();
+  updateUrlWithTitle(hash, title);
 }
 
 // Get current hash
 export function getUrlHash(): string {
   return window.location.hash.slice(1);
+}
+
+// Get title from URL query param
+export function getUrlTitle(): string {
+  const params = new URLSearchParams(window.location.search);
+  const title = params.get('title');
+  return title ? decodeURIComponent(title) : '';
 }
