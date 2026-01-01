@@ -23,6 +23,7 @@ export interface ParsedRecipe {
   sections: ParsedSection[];
   notes: string;
   instructions: string[];
+  title: string;
 }
 
 // Sanitize input text
@@ -96,30 +97,63 @@ export function parseIngredientLine(line: string): ParsedIngredient | null {
   // Remove parenthetical for main parsing
   const mainText = clean.replace(/\([^)]+\)/g, '').trim();
   
-  // Handle combined quantities like "2 cups + 2 Tbsp" or "2 cups and 2 Tbsp"
-  const combinedMatch = mainText.match(/^([\d\s\/⅛¼⅓⅜½⅝⅔¾⅞.]+)\s*(\w+)\s*(?:\+|and)\s*([\d\s\/⅛¼⅓⅜½⅝⅔¾⅞.]+)\s*(\w+)\s+(.+)$/i);
+  // Handle combined quantities like "2 cups + 2 Tbsp" or "1 and 1/2 teaspoons"
+  // Pattern: qty1 unit1? (+ or and) qty2 unit2? rest
+  const combinedMatch = mainText.match(/^([\d\s\/⅛¼⅓⅜½⅝⅔¾⅞.]+)\s*([a-zA-Z.]*\.?)?\s*(?:\+|and)\s*([\d\s\/⅛¼⅓⅜½⅝⅔¾⅞.]+)\s*([a-zA-Z.]*\.?)?\s+(.+)$/i);
   
   if (combinedMatch) {
     const [, qty1Str, unit1Str, qty2Str, unit2Str, rest] = combinedMatch;
-    const unit1 = findUnit(unit1Str);
-    const unit2 = findUnit(unit2Str);
+    const unit1 = unit1Str ? findUnit(unit1Str.trim()) : null;
+    const unit2 = unit2Str ? findUnit(unit2Str.trim()) : null;
     const qty1 = fractionToDecimal(qty1Str);
     const qty2 = fractionToDecimal(qty2Str);
     
-    // If same unit, combine
-    if (unit1 && unit1 === unit2 && qty1 !== null && qty2 !== null) {
-      return {
-        id: generateId(),
-        original: clean,
-        quantity: qty1 + qty2,
-        unit: unit1,
-        ingredient: rest.trim(),
-        parenthetical,
-        parentheticalQuantity,
-        parentheticalUnit,
-        checked: false,
-        isFraction: qty1Str.includes('/') || /[⅛¼⅓⅜½⅝⅔¾⅞]/.test(qty1Str),
-      };
+    if (qty1 !== null && qty2 !== null) {
+      // If both have same unit, or one lacks unit, combine them
+      if (unit1 && unit1 === unit2) {
+        // Same units - combine
+        return {
+          id: generateId(),
+          original: clean,
+          quantity: qty1 + qty2,
+          unit: unit1,
+          ingredient: rest.trim(),
+          parenthetical,
+          parentheticalQuantity,
+          parentheticalUnit,
+          checked: false,
+          isFraction: qty1Str.includes('/') || /[⅛¼⅓⅜½⅝⅔¾⅞]/.test(qty1Str),
+        };
+      } else if (unit1 && !unit2) {
+        // First has unit, second doesn't - use first unit for combined
+        return {
+          id: generateId(),
+          original: clean,
+          quantity: qty1 + qty2,
+          unit: unit1,
+          ingredient: rest.trim(),
+          parenthetical,
+          parentheticalQuantity,
+          parentheticalUnit,
+          checked: false,
+          isFraction: qty1Str.includes('/') || /[⅛¼⅓⅜½⅝⅔¾⅞]/.test(qty1Str),
+        };
+      } else if (!unit1 && unit2) {
+        // Second has unit, first doesn't - use second unit for combined
+        return {
+          id: generateId(),
+          original: clean,
+          quantity: qty1 + qty2,
+          unit: unit2,
+          ingredient: rest.trim(),
+          parenthetical,
+          parentheticalQuantity,
+          parentheticalUnit,
+          checked: false,
+          isFraction: qty1Str.includes('/') || /[⅛¼⅓⅜½⅝⅔¾⅞]/.test(qty1Str),
+        };
+      }
+      // Different units - don't combine, fall through to standard parsing
     }
   }
   
@@ -244,6 +278,7 @@ export function parseRecipeText(text: string): ParsedRecipe {
     sections,
     notes: '',
     instructions: [],
+    title: '',
   };
 }
 
