@@ -296,7 +296,7 @@ export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
           onChange={handleInputChange}
           onBlur={handleInputBlur}
           onKeyDown={(e) => e.key === 'Enter' && handleInputBlur()}
-          className="w-14 text-center text-lg font-medium bg-transparent border-b border-border/50 focus:border-primary outline-none transition-colors"
+          className="w-16 text-center text-lg font-medium bg-transparent border-b border-border/50 focus:border-primary outline-none transition-colors"
           data-testid="scale-input"
         />
         <span className="text-sm text-muted-foreground">×</span>
