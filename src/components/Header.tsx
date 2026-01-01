@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Sun, Moon, Hash, Percent, Coffee, RotateCcw } from 'lucide-react';
+import { Sun, Moon, Hash, Percent, Coffee, RotateCcw, Settings } from 'lucide-react';
 import { ScaleDial } from './ScaleDial';
 
 interface HeaderProps {
@@ -14,6 +14,7 @@ interface HeaderProps {
   onToggleTheme: () => void;
   hasRecipe: boolean;
   onResetCheckboxes: () => void;
+  onOpenMenu?: () => void;
 }
 
 interface TooltipButtonProps {
@@ -56,6 +57,7 @@ export function Header({
   onToggleTheme,
   hasRecipe,
   onResetCheckboxes,
+  onOpenMenu,
 }: HeaderProps) {
   return (
     <motion.header 
@@ -142,6 +144,15 @@ export function Header({
             >
               {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </TooltipButton>
+            {hasRecipe && onOpenMenu && (
+              <motion.button
+                onClick={onOpenMenu}
+                className="p-2.5 rounded-xl bg-secondary/50 hover:bg-secondary text-foreground transition-colors"
+                whileTap={{ scale: 0.95 }}
+              >
+                <Settings className="w-4 h-4" />
+              </motion.button>
+            )}
           </div>
         </div>
       </div>

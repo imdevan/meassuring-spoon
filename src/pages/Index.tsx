@@ -12,7 +12,7 @@ import { convertUnit } from '@/lib/units';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { RotateCcw, Settings } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 
 export default function Index() {
   const [recipe, setRecipe] = useState<ParsedRecipe>({
@@ -171,6 +171,7 @@ export default function Index() {
         onToggleTheme={toggleTheme}
         hasRecipe={hasRecipe}
         onResetCheckboxes={handleResetCheckboxes}
+        onOpenMenu={() => setIsMenuOpen(true)}
       />
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-8 space-y-6">
@@ -191,7 +192,7 @@ export default function Index() {
                 value={recipe.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Recipe title (optional)"
-                className="w-full text-xl font-medium bg-transparent border-none outline-none placeholder:text-muted-foreground/50"
+                className="w-full text-xl font-display bg-transparent border-none outline-none placeholder:text-muted-foreground/50"
                 data-testid="recipe-title-input"
               />
             </div>
@@ -208,25 +209,15 @@ export default function Index() {
             {/* Ingredients */}
             <div className="glass-card p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl">Ingredients</h2>
-                <div className="flex items-center gap-2">
-                  <motion.button
-                    onClick={handleResetCheckboxes}
-                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-                    whileTap={{ scale: 0.95 }}
-                    title="Reset checkboxes"
-                  >
-                    <RotateCcw className="w-5 h-5" />
-                  </motion.button>
-                  <motion.button
-                    onClick={() => setIsMenuOpen(true)}
-                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-                    whileTap={{ scale: 0.95 }}
-                    title="Settings"
-                  >
-                    <Settings className="w-5 h-5" />
-                  </motion.button>
-                </div>
+                <h2 className="text-xl font-display">Ingredients</h2>
+                <motion.button
+                  onClick={handleResetCheckboxes}
+                  className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                  whileTap={{ scale: 0.95 }}
+                  title="Reset checkboxes"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                </motion.button>
               </div>
               
               <IngredientList
