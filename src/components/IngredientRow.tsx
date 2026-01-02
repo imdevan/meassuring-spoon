@@ -1,4 +1,5 @@
 import React, { forwardRef, useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { UNITS, getCompatibleUnits, convertUnit, formatNumber } from '@/lib/units';
 import type { ParsedIngredient } from '@/lib/parser';
@@ -21,6 +22,8 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
 }, ref) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
 
   const scaledQuantity = ingredient.quantity !== null 
     ? ingredient.quantity * scale 
@@ -34,16 +37,49 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
   const hasUnit = ingredient.unit !== null;
   const compatibleUnits = hasUnit ? getCompatibleUnits(ingredient.unit!) : [];
 
+  // Update dropdown position
+  const updateDropdownPosition = () => {
+    if (buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: buttonRect.bottom + 4, // mt-1 = 4px
+        right: window.innerWidth - buttonRect.right,
+      });
+    }
+  };
+
+  // Update dropdown position when it opens or on scroll/resize
+  useEffect(() => {
+    if (isDropdownOpen) {
+      updateDropdownPosition();
+      
+      const handleScroll = () => updateDropdownPosition();
+      const handleResize = () => updateDropdownPosition();
+      
+      window.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', handleResize);
+      
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [isDropdownOpen]);
+
   // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsDropdownOpen(false);
+        if (buttonRef.current && !buttonRef.current.contains(e.target as Node)) {
+          setIsDropdownOpen(false);
+        }
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isDropdownOpen]);
 
   const handleRowClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -112,8 +148,9 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
 
       {/* Unit conversion dropdown - only show if ingredient has a unit */}
       {hasUnit && compatibleUnits.length > 0 && (
-        <div className="relative" ref={dropdownRef} data-dropdown>
+        <div className="relative" data-dropdown>
           <button
+            ref={buttonRef}
             onClick={(e) => {
               e.stopPropagation();
               setIsDropdownOpen(!isDropdownOpen);
@@ -125,9 +162,14 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
             <ChevronDown className="w-3 h-3" />
           </button>
 
-          {isDropdownOpen && (
+          {isDropdownOpen && typeof document !== 'undefined' && createPortal(
             <motion.div
-              className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-card z-50 min-w-[200px] py-1 overflow-hidden max-h-72 overflow-y-auto"
+              ref={dropdownRef}
+              className="fixed bg-card border border-border rounded-xl shadow-card z-50 min-w-[200px] py-1 overflow-hidden max-h-72 overflow-y-auto"
+              style={{
+                top: `${dropdownPosition.top}px`,
+                right: `${dropdownPosition.right}px`,
+              }}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
@@ -187,7 +229,8 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
                     </button>
                   );
                 })}
-            </motion.div>
+            </motion.div>,
+            document.body
           )}
         </div>
       )}
