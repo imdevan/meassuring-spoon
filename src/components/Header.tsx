@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Sun, Moon, Hash, Percent, Coffee, RotateCcw, Settings } from 'lucide-react';
+import { useState } from 'react';
+import { Sun, Moon, Hash, Percent, Coffee, RotateCcw, Menu } from 'lucide-react';
 import { ScaleDial } from './ScaleDial';
 
 interface HeaderProps {
@@ -41,6 +42,35 @@ function TooltipButton({ onClick, tooltip, isActive, children, testId }: Tooltip
         {children}
       </motion.button>
       <span className="tooltip-content">{tooltip}</span>
+    </div>
+  );
+}
+
+function ResetButton({ onClick }: { onClick: () => void }) {
+  const [isSpinning, setIsSpinning] = useState(false);
+
+  const handleClick = () => {
+    setIsSpinning(true);
+    onClick();
+    setTimeout(() => setIsSpinning(false), 500);
+  };
+
+  return (
+    <div className="tooltip-wrapper">
+      <motion.button
+        onClick={handleClick}
+        className="p-2.5 rounded-xl transition-colors bg-secondary/50 hover:bg-secondary text-foreground"
+        whileTap={{ scale: 0.95 }}
+        data-testid="header-reset-toggle"
+      >
+        <motion.div
+          animate={{ rotate: isSpinning ? -360 : 0 }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
+        >
+          <RotateCcw className="w-4 h-4" />
+        </motion.div>
+      </motion.button>
+      <span className="tooltip-content">Reset checkboxes</span>
     </div>
   );
 }
@@ -110,13 +140,7 @@ export function Header({
                   </TooltipButton>
                 )}
 
-                <TooltipButton
-                  onClick={onResetCheckboxes}
-                  tooltip="Reset checkboxes"
-                  testId="header-reset-toggle"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </TooltipButton>
+                <ResetButton onClick={onResetCheckboxes} />
 
                 <div className="w-px h-8 bg-border" />
               </motion.div>
@@ -144,13 +168,13 @@ export function Header({
             >
               {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </TooltipButton>
-            {hasRecipe && onOpenMenu && (
+            {onOpenMenu && (
               <motion.button
                 onClick={onOpenMenu}
                 className="p-2.5 rounded-xl bg-secondary/50 hover:bg-secondary text-foreground transition-colors"
                 whileTap={{ scale: 0.95 }}
               >
-                <Settings className="w-4 h-4" />
+                <Menu className="w-4 h-4" />
               </motion.button>
             )}
           </div>

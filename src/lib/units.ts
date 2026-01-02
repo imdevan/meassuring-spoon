@@ -1,4 +1,5 @@
 // Unit conversion data and utilities
+// Water density: 1ml = 1g for liquid/weight cross-conversion
 
 export type UnitCategory = 'volume' | 'weight' | 'count';
 
@@ -16,7 +17,7 @@ export const UNITS: Record<string, UnitInfo> = {
   tsp: { name: 'teaspoon', abbrev: ['tsp', 'teaspoon', 'teaspoons', 't'], category: 'volume', toBase: 4.929 },
   tbsp: { name: 'tablespoon', abbrev: ['tbsp', 'tablespoon', 'tablespoons', 'T', 'Tbsp'], category: 'volume', toBase: 14.787 },
   cup: { name: 'cup', abbrev: ['cup', 'cups', 'c'], category: 'volume', toBase: 236.588 },
-  floz: { name: 'fluid ounce', abbrev: ['fl oz', 'fluid oz', 'fluid ounce', 'fluid ounces', 'fl. oz.'], category: 'volume', toBase: 29.574 },
+  floz: { name: 'fluid ounce', abbrev: ['fl oz', 'fluid oz', 'fluid ounce', 'fluid ounces', 'fl. oz.', 'oz', 'ounce', 'ounces'], category: 'volume', toBase: 29.574 },
   pint: { name: 'pint', abbrev: ['pint', 'pints', 'pt'], category: 'volume', toBase: 473.176 },
   quart: { name: 'quart', abbrev: ['quart', 'quarts', 'qt'], category: 'volume', toBase: 946.353 },
   gallon: { name: 'gallon', abbrev: ['gallon', 'gallons', 'gal'], category: 'volume', toBase: 3785.41 },
@@ -25,7 +26,6 @@ export const UNITS: Record<string, UnitInfo> = {
   g: { name: 'gram', abbrev: ['g', 'gram', 'grams', 'gr'], category: 'weight', toBase: 1 },
   kg: { name: 'kilogram', abbrev: ['kg', 'kilogram', 'kilograms', 'kilo', 'kilos'], category: 'weight', toBase: 1000 },
   mg: { name: 'milligram', abbrev: ['mg', 'milligram', 'milligrams'], category: 'weight', toBase: 0.001 },
-  oz: { name: 'ounce', abbrev: ['oz', 'ounce', 'ounces'], category: 'weight', toBase: 28.3495 },
   lb: { name: 'pound', abbrev: ['lb', 'lbs', 'pound', 'pounds'], category: 'weight', toBase: 453.592 },
 
   // Count units
@@ -44,24 +44,46 @@ export function findUnit(text: string): string | null {
   return null;
 }
 
-// Convert between units
+// Convert between units (supports cross-category volume/weight via water density)
 export function convertUnit(value: number, fromUnit: string, toUnit: string): number | null {
   const from = UNITS[fromUnit];
   const to = UNITS[toUnit];
   
-  if (!from || !to || from.category !== to.category) {
+  if (!from || !to) {
     return null;
   }
 
-  const baseValue = value * from.toBase;
-  return baseValue / to.toBase;
+  // Same category - direct conversion
+  if (from.category === to.category) {
+    const baseValue = value * from.toBase;
+    return baseValue / to.toBase;
+  }
+
+  // Cross-category: volume <-> weight using water density (1ml = 1g)
+  if ((from.category === 'volume' && to.category === 'weight') ||
+      (from.category === 'weight' && to.category === 'volume')) {
+    // Convert to base unit first (ml or g, which are equal for water)
+    const baseValue = value * from.toBase;
+    // Convert from base to target unit
+    return baseValue / to.toBase;
+  }
+
+  return null;
 }
 
-// Get compatible units for conversion
+// Get compatible units for conversion (includes cross-category volume/weight)
 export function getCompatibleUnits(unitKey: string): string[] {
   const unit = UNITS[unitKey];
   if (!unit) return [];
   
+  // For volume and weight, show both categories
+  if (unit.category === 'volume' || unit.category === 'weight') {
+    return Object.entries(UNITS)
+      .filter(([key, u]) => (u.category === 'volume' || u.category === 'weight') && key !== unitKey)
+      .map(([key]) => key);
+  }
+  
+  // For other categories (count), only same category
   return Object.entries(UNITS)
     .filter(([key, u]) => u.category === unit.category && key !== unitKey)
     .map(([key]) => key);

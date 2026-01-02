@@ -127,32 +127,66 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
 
           {isDropdownOpen && (
             <motion.div
-              className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-card z-50 min-w-[180px] py-1 overflow-hidden max-h-64 overflow-y-auto"
+              className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-card z-50 min-w-[200px] py-1 overflow-hidden max-h-72 overflow-y-auto"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
-              {compatibleUnits.map(unitKey => {
-                const unitInfo = UNITS[unitKey];
-                const converted = convertUnit(scaledQuantity || 0, ingredient.unit!, unitKey);
-                
-                return (
-                  <button
-                    key={unitKey}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onUnitChange(unitKey);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="w-full px-4 py-2 text-left hover:bg-secondary flex justify-between items-center gap-4 transition-colors"
-                  >
-                    <span className="font-medium">{unitInfo.name}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {converted !== null ? formatNumber(converted, useFractions) : '—'}
-                    </span>
-                  </button>
-                );
-              })}
+              {/* Volume section */}
+              <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider bg-secondary/30">
+                Volume
+              </div>
+              {compatibleUnits
+                .filter(unitKey => UNITS[unitKey].category === 'volume')
+                .map(unitKey => {
+                  const unitInfo = UNITS[unitKey];
+                  const converted = convertUnit(scaledQuantity || 0, ingredient.unit!, unitKey);
+                  
+                  return (
+                    <button
+                      key={unitKey}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUnitChange(unitKey);
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left hover:bg-secondary flex justify-between items-center gap-4 transition-colors"
+                    >
+                      <span className="font-medium">{unitInfo.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {converted !== null ? formatNumber(converted, useFractions) : '—'}
+                      </span>
+                    </button>
+                  );
+                })}
+              
+              {/* Weight section */}
+              <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider bg-secondary/30 mt-1">
+                Weight
+              </div>
+              {compatibleUnits
+                .filter(unitKey => UNITS[unitKey].category === 'weight')
+                .map(unitKey => {
+                  const unitInfo = UNITS[unitKey];
+                  const converted = convertUnit(scaledQuantity || 0, ingredient.unit!, unitKey);
+                  
+                  return (
+                    <button
+                      key={unitKey}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUnitChange(unitKey);
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left hover:bg-secondary flex justify-between items-center gap-4 transition-colors"
+                    >
+                      <span className="font-medium">{unitInfo.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {converted !== null ? formatNumber(converted, useFractions) : '—'}
+                      </span>
+                    </button>
+                  );
+                })}
             </motion.div>
           )}
         </div>

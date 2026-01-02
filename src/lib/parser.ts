@@ -282,8 +282,23 @@ export function parseRecipeText(text: string): ParsedRecipe {
   };
 }
 
-// Parse instructions text
+// Parse instructions text - splits by double newlines (paragraphs) or numbered steps
 export function parseInstructions(text: string): string[] {
+  // First, try to split by double newlines (paragraphs)
+  const paragraphs = text.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
+  
+  // If we got multiple paragraphs, use those as steps
+  if (paragraphs.length > 1) {
+    return paragraphs.map(p => {
+      // Clean up each paragraph - remove numbering if present, normalize whitespace
+      return p
+        .replace(/^(\d+[.)]\s*|[-•]\s*)/, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    });
+  }
+  
+  // Fallback: split by numbered steps or bullet points
   const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   
   const instructions: string[] = [];

@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import type { ParsedSection } from '@/lib/parser';
 import { IngredientRow } from './IngredientRow';
+import { SwipeToDelete } from './SwipeToDelete';
 
 interface IngredientListProps {
   sections: ParsedSection[];
@@ -9,6 +10,7 @@ interface IngredientListProps {
   useFractions: boolean;
   onToggleIngredient: (sectionId: string, ingredientId: string) => void;
   onChangeUnit: (sectionId: string, ingredientId: string, newUnit: string) => void;
+  onDeleteIngredient?: (sectionId: string, ingredientId: string) => void;
 }
 
 export const IngredientList = forwardRef<HTMLDivElement, IngredientListProps>(function IngredientList({
@@ -17,6 +19,7 @@ export const IngredientList = forwardRef<HTMLDivElement, IngredientListProps>(fu
   useFractions,
   onToggleIngredient,
   onChangeUnit,
+  onDeleteIngredient,
 }, ref) {
   if (sections.length === 0) {
     return null;
@@ -36,14 +39,18 @@ export const IngredientList = forwardRef<HTMLDivElement, IngredientListProps>(fu
           )}
           <div className="space-y-1">
             {section.ingredients.map((ingredient) => (
-              <IngredientRow
+              <SwipeToDelete
                 key={ingredient.id}
-                ingredient={ingredient}
-                scale={scale}
-                useFractions={useFractions}
-                onToggleChecked={() => onToggleIngredient(section.id, ingredient.id)}
-                onUnitChange={(newUnit) => onChangeUnit(section.id, ingredient.id, newUnit)}
-              />
+                onDelete={() => onDeleteIngredient?.(section.id, ingredient.id)}
+              >
+                <IngredientRow
+                  ingredient={ingredient}
+                  scale={scale}
+                  useFractions={useFractions}
+                  onToggleChecked={() => onToggleIngredient(section.id, ingredient.id)}
+                  onUnitChange={(newUnit) => onChangeUnit(section.id, ingredient.id, newUnit)}
+                />
+              </SwipeToDelete>
             ))}
           </div>
         </motion.div>
