@@ -24,6 +24,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
+  const [isScrolling, setIsScrolling] = useState(false);
 
   const scaledQuantity = ingredient.quantity !== null 
     ? ingredient.quantity * scale 
@@ -64,6 +65,29 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
         window.removeEventListener('resize', handleResize);
       };
     }
+  }, [isDropdownOpen]);
+
+  // Handle scroll detection for scrollbar visibility
+  useEffect(() => {
+    const dropdown = dropdownRef.current;
+    if (!dropdown || !isDropdownOpen) return;
+
+    let scrollTimeout: NodeJS.Timeout;
+    
+    const handleScroll = () => {
+      setIsScrolling(true);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        setIsScrolling(false);
+      }, 1000); // Hide scrollbar 1 second after scrolling stops
+    };
+
+    dropdown.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      dropdown.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout);
+    };
   }, [isDropdownOpen]);
 
   // Close dropdown on outside click
@@ -165,7 +189,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
           {isDropdownOpen && typeof document !== 'undefined' && createPortal(
             <motion.div
               ref={dropdownRef}
-              className="fixed bg-card border border-border rounded-xl shadow-card z-50 min-w-[200px] py-1 overflow-hidden max-h-72 overflow-y-auto"
+              className={`fixed bg-card border border-border rounded-xl shadow-card z-50 min-w-[200px] py-1 overflow-hidden max-h-72 overflow-y-auto conversion-dropdown ${isScrolling ? 'scrolling' : ''}`}
               style={{
                 top: `${dropdownPosition.top}px`,
                 right: `${dropdownPosition.right}px`,
