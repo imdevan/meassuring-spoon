@@ -26,12 +26,12 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const [isScrolling, setIsScrolling] = useState(false);
 
-  const scaledQuantity = ingredient.quantity !== null 
-    ? ingredient.quantity * scale 
+  const scaledQuantity = ingredient.quantity !== null
+    ? ingredient.quantity * scale
     : null;
-  
-  const scaledParenQuantity = ingredient.parentheticalQuantity !== null 
-    ? ingredient.parentheticalQuantity * scale 
+
+  const scaledParenQuantity = ingredient.parentheticalQuantity !== null
+    ? ingredient.parentheticalQuantity * scale
     : null;
 
   // Only show dropdown if ingredient has a recognized unit
@@ -53,13 +53,13 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
   useEffect(() => {
     if (isDropdownOpen) {
       updateDropdownPosition();
-      
+
       const handleScroll = () => updateDropdownPosition();
       const handleResize = () => updateDropdownPosition();
-      
+
       window.addEventListener('scroll', handleScroll, true);
       window.addEventListener('resize', handleResize);
-      
+
       return () => {
         window.removeEventListener('scroll', handleScroll, true);
         window.removeEventListener('resize', handleResize);
@@ -73,7 +73,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
     if (!dropdown || !isDropdownOpen) return;
 
     let scrollTimeout: NodeJS.Timeout;
-    
+
     const handleScroll = () => {
       setIsScrolling(true);
       clearTimeout(scrollTimeout);
@@ -83,7 +83,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
     };
 
     dropdown.addEventListener('scroll', handleScroll);
-    
+
     return () => {
       dropdown.removeEventListener('scroll', handleScroll);
       clearTimeout(scrollTimeout);
@@ -113,18 +113,18 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
 
   const buildDisplayText = (): string => {
     let text = '';
-    
+
     if (scaledQuantity !== null) {
       text += formatNumber(scaledQuantity, useFractions);
     }
-    
+
     if (ingredient.unit) {
       const unitInfo = UNITS[ingredient.unit];
       text += ` ${unitInfo?.name || ingredient.unit}`;
     }
-    
+
     text += ` ${ingredient.ingredient}`;
-    
+
     if (scaledParenQuantity !== null && ingredient.parentheticalUnit) {
       const parenUnitInfo = UNITS[ingredient.parentheticalUnit];
       text += ` (${formatNumber(scaledParenQuantity, useFractions)}${parenUnitInfo?.name || ingredient.parentheticalUnit})`;
@@ -138,7 +138,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
         text += ` (${ingredient.parenthetical})`;
       }
     }
-    
+
     return text.trim();
   };
 
@@ -152,12 +152,11 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
       data-testid="ingredient-row"
     >
       {/* Checkbox */}
-      <motion.div 
-        className={`flex-shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${
-          ingredient.checked 
-            ? 'bg-primary border-primary' 
+      <motion.div
+        className={`flex-shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${ingredient.checked
+            ? 'bg-primary border-primary'
             : 'border-border hover:border-primary/50'
-        }`}
+          }`}
         whileTap={{ scale: 0.9 }}
       >
         {ingredient.checked && (
@@ -189,7 +188,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
           {isDropdownOpen && typeof document !== 'undefined' && createPortal(
             <motion.div
               ref={dropdownRef}
-              className={`fixed bg-card border border-border rounded-xl shadow-card z-50 min-w-[200px] py-1 overflow-hidden max-h-72 overflow-y-auto conversion-dropdown ${isScrolling ? 'scrolling' : ''}`}
+              className={`fixed bg-card border border-border rounded-xl shadow-card z-30 min-w-[200px] py-1 overflow-hidden max-h-72 overflow-y-auto conversion-dropdown ${isScrolling ? 'scrolling' : ''}`}
               style={{
                 top: `${dropdownPosition.top}px`,
                 right: `${dropdownPosition.right}px`,
@@ -207,7 +206,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
                 .map(unitKey => {
                   const unitInfo = UNITS[unitKey];
                   const converted = convertUnit(scaledQuantity || 0, ingredient.unit!, unitKey);
-                  
+
                   return (
                     <button
                       key={unitKey}
@@ -225,7 +224,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
                     </button>
                   );
                 })}
-              
+
               {/* Weight section */}
               <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider bg-secondary/30 mt-1">
                 Weight
@@ -235,7 +234,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
                 .map(unitKey => {
                   const unitInfo = UNITS[unitKey];
                   const converted = convertUnit(scaledQuantity || 0, ingredient.unit!, unitKey);
-                  
+
                   return (
                     <button
                       key={unitKey}

@@ -90,7 +90,7 @@ export function Header({
 }: HeaderProps) {
   return (
     <motion.header
-      className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50 no-print"
+      className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 no-print"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 200, damping: 25 }}
