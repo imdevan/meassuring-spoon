@@ -24,6 +24,7 @@ export default function Index() {
   const [scale, setScale] = useState(1);
   const [useFractions, setUseFractions] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isResetSpinning, setIsResetSpinning] = useState(false);
 
   const { isActive: cookMode, isSupported: cookModeSupported, toggle: toggleCookMode } = useWakeLock();
   const { resolvedTheme, toggleTheme } = useTheme();
@@ -151,6 +152,12 @@ export default function Index() {
     }));
     setIsMenuOpen(false);
   }, []);
+
+  const handleResetCheckboxesWithAnimation = useCallback(() => {
+    setIsResetSpinning(true);
+    handleResetCheckboxes();
+    setTimeout(() => setIsResetSpinning(false), 500);
+  }, [handleResetCheckboxes]);
 
   const handleNotesChange = useCallback((notes: string) => {
     setRecipe(prev => ({ ...prev, notes }));
@@ -316,12 +323,17 @@ export default function Index() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-display">Ingredients</h2>
                 <motion.button
-                  onClick={handleResetCheckboxes}
+                  onClick={handleResetCheckboxesWithAnimation}
                   className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
                   whileTap={{ scale: 0.95 }}
                   title="Reset checkboxes"
                 >
-                  <RotateCcw className="w-5 h-5" />
+                  <motion.div
+                    animate={{ rotate: isResetSpinning ? -360 : 0 }}
+                    transition={{ duration: 0.5, ease: 'easeInOut' }}
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                  </motion.div>
                 </motion.button>
               </div>
               
