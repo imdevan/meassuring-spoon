@@ -271,6 +271,43 @@
   @apply bg-muted-foreground/30;
 }
 
+/* Auto-hide scrollbar for conversion dropdown */
+.conversion-dropdown {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.conversion-dropdown:hover,
+.conversion-dropdown:focus-within,
+.conversion-dropdown.scrolling {
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+
+.conversion-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.conversion-dropdown::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.conversion-dropdown::-webkit-scrollbar-thumb {
+  @apply bg-transparent rounded-full;
+  transition: background-color 0.3s ease;
+}
+
+.conversion-dropdown:hover::-webkit-scrollbar-thumb,
+.conversion-dropdown:focus-within::-webkit-scrollbar-thumb,
+.conversion-dropdown.scrolling::-webkit-scrollbar-thumb {
+  @apply bg-border;
+}
+
+.conversion-dropdown:hover::-webkit-scrollbar-thumb:hover,
+.conversion-dropdown:focus-within::-webkit-scrollbar-thumb:hover,
+.conversion-dropdown.scrolling::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/30;
+}
+
 /* Print styles */
 @media print {
   body {
