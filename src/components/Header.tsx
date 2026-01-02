@@ -14,7 +14,6 @@ interface HeaderProps {
   isDark: boolean;
   onToggleTheme: () => void;
   hasRecipe: boolean;
-  onResetCheckboxes: () => void;
   onOpenMenu?: () => void;
 }
 
@@ -45,35 +44,6 @@ function TooltipButton({ onClick, tooltip, isActive, children, testId }: Tooltip
   );
 }
 
-function ResetButton({ onClick }: { onClick: () => void }) {
-  const [isSpinning, setIsSpinning] = useState(false);
-
-  const handleClick = () => {
-    setIsSpinning(true);
-    onClick();
-    setTimeout(() => setIsSpinning(false), 500);
-  };
-
-  return (
-    <div className="tooltip-wrapper">
-      <motion.button
-        onClick={handleClick}
-        className="p-2.5 rounded-xl transition-colors bg-secondary/50 hover:bg-secondary text-foreground"
-        whileTap={{ scale: 0.95 }}
-        data-testid="header-reset-toggle"
-      >
-        <motion.div
-          animate={{ rotate: isSpinning ? -360 : 0 }}
-          transition={{ duration: 0.5, ease: 'easeInOut' }}
-        >
-          <RotateCcw className="w-4 h-4" />
-        </motion.div>
-      </motion.button>
-      <span className="tooltip-content">Reset checkboxes</span>
-    </div>
-  );
-}
-
 export function Header({
   scale,
   onScaleChange,
@@ -85,7 +55,6 @@ export function Header({
   isDark,
   onToggleTheme,
   hasRecipe,
-  onResetCheckboxes,
   onOpenMenu,
 }: HeaderProps) {
   return (
@@ -138,8 +107,6 @@ export function Header({
                     <Coffee className="w-4 h-4" />
                   </TooltipButton>
                 )}
-
-                <ResetButton onClick={onResetCheckboxes} />
 
                 <div className="w-px h-8 bg-border" />
               </motion.div>

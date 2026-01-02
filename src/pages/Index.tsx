@@ -282,7 +282,6 @@ export default function Index() {
         isDark={resolvedTheme === 'dark'}
         onToggleTheme={toggleTheme}
         hasRecipe={hasRecipe}
-        onResetCheckboxes={handleResetCheckboxes}
         onOpenMenu={() => setIsMenuOpen(true)}
       />
 
