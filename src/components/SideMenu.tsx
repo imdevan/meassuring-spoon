@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { X, Sun, Moon, RotateCcw, Hash, Percent, Coffee, Printer, Trash2 } from 'lucide-react';
 import { ScaleDial } from './ScaleDial';
 
@@ -21,7 +21,7 @@ interface SideMenuProps {
   isMobile: boolean;
 }
 
-function ResetButtonMenu({ onClick }: { onClick: () => void }) {
+const ResetButtonMenu = forwardRef<HTMLButtonElement, { onClick: () => void }>(function ResetButtonMenu({ onClick }, ref) {
   const [isSpinning, setIsSpinning] = useState(false);
 
   const handleClick = () => {
@@ -32,6 +32,7 @@ function ResetButtonMenu({ onClick }: { onClick: () => void }) {
 
   return (
     <button
+      ref={ref}
       onClick={handleClick}
       className="w-full flex items-center gap-3 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
       data-testid="reset-button"
@@ -45,7 +46,7 @@ function ResetButtonMenu({ onClick }: { onClick: () => void }) {
       <span>Reset Checkboxes</span>
     </button>
   );
-}
+});
 
 export function SideMenu({
   isOpen,

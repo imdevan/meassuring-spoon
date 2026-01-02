@@ -17,7 +17,7 @@ export const UNITS: Record<string, UnitInfo> = {
   tsp: { name: 'teaspoon', abbrev: ['tsp', 'teaspoon', 'teaspoons', 't'], category: 'volume', toBase: 4.929 },
   tbsp: { name: 'tablespoon', abbrev: ['tbsp', 'tablespoon', 'tablespoons', 'T', 'Tbsp'], category: 'volume', toBase: 14.787 },
   cup: { name: 'cup', abbrev: ['cup', 'cups', 'c'], category: 'volume', toBase: 236.588 },
-  floz: { name: 'fluid ounce', abbrev: ['fl oz', 'fluid oz', 'fluid ounce', 'fluid ounces', 'fl. oz.', 'oz', 'ounce', 'ounces'], category: 'volume', toBase: 29.574 },
+  floz: { name: 'oz', abbrev: ['fl oz', 'fluid oz', 'fluid ounce', 'fluid ounces', 'fl. oz.', 'oz'], category: 'volume', toBase: 29.574 },
   pint: { name: 'pint', abbrev: ['pint', 'pints', 'pt'], category: 'volume', toBase: 473.176 },
   quart: { name: 'quart', abbrev: ['quart', 'quarts', 'qt'], category: 'volume', toBase: 946.353 },
   gallon: { name: 'gallon', abbrev: ['gallon', 'gallons', 'gal'], category: 'volume', toBase: 3785.41 },
@@ -26,6 +26,7 @@ export const UNITS: Record<string, UnitInfo> = {
   g: { name: 'gram', abbrev: ['g', 'gram', 'grams', 'gr'], category: 'weight', toBase: 1 },
   kg: { name: 'kilogram', abbrev: ['kg', 'kilogram', 'kilograms', 'kilo', 'kilos'], category: 'weight', toBase: 1000 },
   mg: { name: 'milligram', abbrev: ['mg', 'milligram', 'milligrams'], category: 'weight', toBase: 0.001 },
+  oz: { name: 'ounces', abbrev: ['ounce', 'ounces'], category: 'weight', toBase: 28.3495 },
   lb: { name: 'pound', abbrev: ['lb', 'lbs', 'pound', 'pounds'], category: 'weight', toBase: 453.592 },
 
   // Count units
