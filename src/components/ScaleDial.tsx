@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useRef, useState, useEffect, forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -129,7 +129,7 @@ interface ScaleDialProps {
   size?: 'sm' | 'lg';
 }
 
-export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
+export const ScaleDial = forwardRef<HTMLDivElement, ScaleDialProps>(function ScaleDial({ value, onChange, size = 'sm' }, ref) {
   const dialRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [inputValue, setInputValue] = useState(value.toString());
@@ -318,4 +318,4 @@ export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
       </div>
     </div>
   );
-}
+});
