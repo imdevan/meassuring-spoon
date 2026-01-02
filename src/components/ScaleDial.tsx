@@ -252,6 +252,11 @@ export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
         <div className="absolute inset-1">
           {Array.from({ length: tickCount }).map((_, i) => {
             const tickRotation = (i / tickCount) * 360;
+
+            {/* Don't render bottom tick so it looks like an oven dial */ }
+            if (tickRotation == 180)
+              return null
+
             const isMain = i % 3 === 0;
             return (
               <div
@@ -269,6 +274,7 @@ export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
             );
           })}
         </div>
+
 
         {/* Rotating indicator */}
         <motion.div
