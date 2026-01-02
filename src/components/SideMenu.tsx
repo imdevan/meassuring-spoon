@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import { X, Sun, Moon, RotateCcw, Hash, Percent, Coffee, Printer, Trash2 } from 'lucide-react';
 import { ScaleDial } from './ScaleDial';
 
@@ -18,6 +19,32 @@ interface SideMenuProps {
   onPrint: () => void;
   onClearRecipe: () => void;
   isMobile: boolean;
+}
+
+function ResetButtonMenu({ onClick }: { onClick: () => void }) {
+  const [isSpinning, setIsSpinning] = useState(false);
+
+  const handleClick = () => {
+    setIsSpinning(true);
+    onClick();
+    setTimeout(() => setIsSpinning(false), 500);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="w-full flex items-center gap-3 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
+      data-testid="reset-button"
+    >
+      <motion.div
+        animate={{ rotate: isSpinning ? -360 : 0 }}
+        transition={{ duration: 0.5, ease: 'easeInOut' }}
+      >
+        <RotateCcw className="w-5 h-5" />
+      </motion.div>
+      <span>Reset Checkboxes</span>
+    </button>
+  );
 }
 
 export function SideMenu({
@@ -167,14 +194,7 @@ export function SideMenu({
                   <span>Print Recipe</span>
                 </button>
 
-                <button
-                  onClick={onReset}
-                  className="w-full flex items-center gap-3 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                  data-testid="reset-button"
-                >
-                  <RotateCcw className="w-5 h-5" />
-                  <span>Reset Checkboxes</span>
-                </button>
+                <ResetButtonMenu onClick={onReset} />
 
                 <button
                   onClick={onClearRecipe}

@@ -8,7 +8,7 @@ import { InstructionsList } from '@/components/InstructionsList';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { parseRecipeText, parseInstructions, type ParsedRecipe } from '@/lib/parser';
 import { encodeRecipeToHash, decodeRecipeFromHash, updateUrlWithTitle, getUrlHash, getUrlTitle } from '@/lib/state';
-import { convertUnit } from '@/lib/units';
+import { convertUnit, UNITS, formatNumber } from '@/lib/units';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -115,6 +115,29 @@ export default function Index() {
     }));
   }, []);
 
+  const handleDeleteIngredient = useCallback((sectionId: string, ingredientId: string) => {
+    setRecipe(prev => ({
+      ...prev,
+      sections: prev.sections
+        .map(section => 
+          section.id === sectionId
+            ? {
+                ...section,
+                ingredients: section.ingredients.filter(ing => ing.id !== ingredientId),
+              }
+            : section
+        )
+        .filter(section => section.ingredients.length > 0), // Remove empty sections
+    }));
+  }, []);
+
+  const handleDeleteInstruction = useCallback((index: number) => {
+    setRecipe(prev => ({
+      ...prev,
+      instructions: prev.instructions.filter((_, i) => i !== index),
+    }));
+  }, []);
+
   const handleResetCheckboxes = useCallback(() => {
     setRecipe(prev => ({
       ...prev,
@@ -143,9 +166,91 @@ export default function Index() {
   }, []);
 
   const handlePrint = useCallback(() => {
-    window.print();
+    // Build plain text for printing
+    const lines: string[] = [];
+    
+    // Title
+    if (recipe.title) {
+      lines.push(recipe.title);
+      lines.push('='.repeat(recipe.title.length));
+      lines.push('');
+    }
+    
+    // Notes
+    if (recipe.notes) {
+      lines.push('Notes:');
+      lines.push(recipe.notes);
+      lines.push('');
+    }
+    
+    // Ingredients
+    if (recipe.sections.length > 0) {
+      lines.push('Ingredients:');
+      for (const section of recipe.sections) {
+        if (section.title) {
+          lines.push(`  ${section.title}`);
+        }
+        for (const ing of section.ingredients) {
+          let line = '  • ';
+          if (ing.quantity !== null) {
+            const scaled = ing.quantity * scale;
+            line += formatNumber(scaled, useFractions);
+          }
+          if (ing.unit) {
+            const unitInfo = UNITS[ing.unit];
+            line += ` ${unitInfo?.name || ing.unit}`;
+          }
+          line += ` ${ing.ingredient}`;
+          if (ing.parentheticalQuantity !== null && ing.parentheticalUnit) {
+            const scaledParen = ing.parentheticalQuantity * scale;
+            const parenUnitInfo = UNITS[ing.parentheticalUnit];
+            line += ` (${formatNumber(scaledParen, useFractions)} ${parenUnitInfo?.name || ing.parentheticalUnit})`;
+          } else if (ing.parenthetical) {
+            line += ` (${ing.parenthetical})`;
+          }
+          lines.push(line.trim());
+        }
+      }
+      lines.push('');
+    }
+    
+    // Instructions
+    if (recipe.instructions.length > 0) {
+      lines.push('Instructions:');
+      recipe.instructions.forEach((inst, idx) => {
+        lines.push(`  ${idx + 1}. ${inst}`);
+      });
+    }
+    
+    // Create a printable element
+    const printContent = lines.join('\n');
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>${recipe.title || 'Recipe'}</title>
+            <style>
+              body {
+                font-family: 'Georgia', serif;
+                line-height: 1.6;
+                max-width: 600px;
+                margin: 40px auto;
+                padding: 20px;
+                white-space: pre-wrap;
+              }
+            </style>
+          </head>
+          <body>${printContent}</body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+    
     setIsMenuOpen(false);
-  }, []);
+  }, [recipe, scale, useFractions]);
 
   const handleClearRecipe = useCallback(() => {
     setRecipe({ sections: [], notes: '', instructions: [], title: '' });
@@ -226,6 +331,7 @@ export default function Index() {
                 useFractions={useFractions}
                 onToggleIngredient={handleToggleIngredient}
                 onChangeUnit={handleChangeUnit}
+                onDeleteIngredient={handleDeleteIngredient}
               />
             </div>
 
@@ -236,7 +342,10 @@ export default function Index() {
               value={instructionsText}
               onChange={handleInstructionsChange}
               renderContent={() => (
-                <InstructionsList instructions={recipe.instructions} />
+                <InstructionsList 
+                  instructions={recipe.instructions} 
+                  onDeleteInstruction={handleDeleteInstruction}
+                />
               )}
               testId="instructions-section"
             />

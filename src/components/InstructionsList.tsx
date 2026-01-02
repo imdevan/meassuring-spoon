@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { useState } from 'react';
+import { SwipeToDelete } from './SwipeToDelete';
 
 interface InstructionStepProps {
   step: number;
@@ -43,9 +44,10 @@ function InstructionStep({ step, text, isComplete, onToggle }: InstructionStepPr
 
 interface InstructionsListProps {
   instructions: string[];
+  onDeleteInstruction?: (index: number) => void;
 }
 
-export function InstructionsList({ instructions }: InstructionsListProps) {
+export function InstructionsList({ instructions, onDeleteInstruction }: InstructionsListProps) {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
   const toggleStep = (step: number) => {
@@ -71,13 +73,17 @@ export function InstructionsList({ instructions }: InstructionsListProps) {
   return (
     <div className="space-y-2" data-testid="instructions-list">
       {instructions.map((instruction, idx) => (
-        <InstructionStep
+        <SwipeToDelete
           key={idx}
-          step={idx + 1}
-          text={instruction}
-          isComplete={completedSteps.has(idx)}
-          onToggle={() => toggleStep(idx)}
-        />
+          onDelete={() => onDeleteInstruction?.(idx)}
+        >
+          <InstructionStep
+            step={idx + 1}
+            text={instruction}
+            isComplete={completedSteps.has(idx)}
+            onToggle={() => toggleStep(idx)}
+          />
+        </SwipeToDelete>
       ))}
     </div>
   );
