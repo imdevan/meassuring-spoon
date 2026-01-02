@@ -31,11 +31,10 @@ function TooltipButton({ onClick, tooltip, isActive, children, testId }: Tooltip
     <div className="tooltip-wrapper">
       <motion.button
         onClick={onClick}
-        className={`p-2.5 rounded-xl transition-colors ${
-          isActive 
-            ? 'bg-primary text-primary-foreground' 
-            : 'bg-secondary/50 hover:bg-secondary text-foreground'
-        }`}
+        className={`p-2.5 rounded-xl transition-colors ${isActive
+          ? 'bg-primary text-primary-foreground'
+          : 'bg-secondary/50 hover:bg-secondary text-foreground'
+          }`}
         whileTap={{ scale: 0.95 }}
         data-testid={testId}
       >
@@ -90,7 +89,7 @@ export function Header({
   onOpenMenu,
 }: HeaderProps) {
   return (
-    <motion.header 
+    <motion.header
       className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50 no-print"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -99,7 +98,7 @@ export function Header({
       <div className="max-w-3xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
-          <motion.div 
+          <motion.div
             className="flex items-center gap-2"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -117,9 +116,9 @@ export function Header({
                 className="flex items-center gap-3"
               >
                 <ScaleDial value={scale} onChange={onScaleChange} size="sm" />
-                
+
                 <div className="w-px h-8 bg-border" />
-                
+
                 <TooltipButton
                   onClick={onToggleFractions}
                   tooltip={useFractions ? 'Switch to decimals' : 'Switch to fractions'}
@@ -153,6 +152,15 @@ export function Header({
             >
               {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </TooltipButton>
+            {onOpenMenu && (
+              <motion.button
+                onClick={onOpenMenu}
+                className="p-2.5 rounded-xl bg-secondary/50 hover:bg-secondary text-foreground transition-colors"
+                whileTap={{ scale: 0.95 }}
+              >
+                <Menu className="w-4 h-4" />
+              </motion.button>
+            )}
           </div>
 
           {/* Mobile controls */}
