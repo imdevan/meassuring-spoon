@@ -25,17 +25,17 @@ const ROTATION_PER_STEP_RIGHT = MAX_ROTATION / STEPS_AFTER_CENTER;
 function evaluateMathExpression(expr: string): number | null {
   // Clean the expression
   let cleaned = expr.trim();
-  
+
   // Handle unicode fractions
   const fractionMap: Record<string, number> = {
     '⅛': 0.125, '¼': 0.25, '⅓': 0.333, '⅜': 0.375,
     '½': 0.5, '⅝': 0.625, '⅔': 0.667, '¾': 0.75, '⅞': 0.875,
   };
-  
+
   for (const [frac, val] of Object.entries(fractionMap)) {
     cleaned = cleaned.replace(new RegExp(frac, 'g'), val.toString());
   }
-  
+
   // Handle text fractions like "1/2"
   const fractionMatch = cleaned.match(/^(\d+)\s*\/\s*(\d+)$/);
   if (fractionMatch) {
@@ -44,7 +44,7 @@ function evaluateMathExpression(expr: string): number | null {
     if (denom !== 0) return num / denom;
     return null;
   }
-  
+
   // Handle mixed numbers like "1 1/2"
   const mixedMatch = cleaned.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)$/);
   if (mixedMatch) {
@@ -54,12 +54,12 @@ function evaluateMathExpression(expr: string): number | null {
     if (denom !== 0) return whole + num / denom;
     return null;
   }
-  
+
   // Only allow numbers, operators, parentheses, dots, and spaces
   if (!/^[\d+\-*/().\s]+$/.test(cleaned)) {
     return null;
   }
-  
+
   try {
     // Use Function constructor for safer eval
     const result = new Function(`return (${cleaned})`)();
@@ -69,18 +69,18 @@ function evaluateMathExpression(expr: string): number | null {
   } catch {
     return null;
   }
-  
+
   return null;
 }
 
 function getRotationForValue(value: number): number {
   // Clamp display value to 5 (max on dial)
   const displayValue = Math.min(value, 5);
-  
+
   // Find the closest scale value for visual representation
   let closestIndex = 0;
   let minDiff = Math.abs(displayValue - SCALE_VALUES[0]);
-  
+
   for (let i = 1; i < SCALE_VALUES.length; i++) {
     const diff = Math.abs(displayValue - SCALE_VALUES[i]);
     if (diff < minDiff) {
@@ -88,7 +88,7 @@ function getRotationForValue(value: number): number {
       closestIndex = i;
     }
   }
-  
+
   // Calculate rotation based on index relative to center
   if (closestIndex <= CENTER_INDEX) {
     return -(CENTER_INDEX - closestIndex) * ROTATION_PER_STEP_LEFT;
@@ -101,10 +101,10 @@ function getValueFromAngle(angle: number): number {
   // Normalize angle to -180 to 180
   while (angle > 180) angle -= 360;
   while (angle < -180) angle += 360;
-  
+
   // Clamp to our rotation range
   const clampedAngle = Math.max(-MAX_ROTATION, Math.min(MAX_ROTATION, angle));
-  
+
   // Convert angle to index
   let index: number;
   if (clampedAngle <= 0) {
@@ -116,10 +116,10 @@ function getValueFromAngle(angle: number): number {
     const stepsFromCenter = clampedAngle / ROTATION_PER_STEP_RIGHT;
     index = Math.round(CENTER_INDEX + stepsFromCenter);
   }
-  
+
   // Clamp to valid indices
   index = Math.max(0, Math.min(SCALE_VALUES.length - 1, index));
-  
+
   return SCALE_VALUES[index];
 }
 
@@ -149,7 +149,7 @@ export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
     e.preventDefault();
     setIsDragging(true);
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    
+
     // Calculate initial angle
     if (dialRef.current) {
       const rect = dialRef.current.getBoundingClientRect();
@@ -169,30 +169,30 @@ export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
     const centerY = rect.top + rect.height / 2;
 
     const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
-    
+
     if (lastAngleRef.current !== null) {
       // Calculate delta angle
       let deltaAngle = currentAngle - lastAngleRef.current;
-      
+
       // Handle wrap-around
       if (deltaAngle > 180) deltaAngle -= 360;
       if (deltaAngle < -180) deltaAngle += 360;
-      
+
       // Update accumulated rotation
       accumulatedRotationRef.current += deltaAngle;
-      
+
       // Clamp accumulated rotation
       accumulatedRotationRef.current = Math.max(-MAX_ROTATION, Math.min(MAX_ROTATION, accumulatedRotationRef.current));
-      
+
       // Convert to value
       const newValue = getValueFromAngle(accumulatedRotationRef.current);
-      
+
       if (newValue !== value) {
         onChange(newValue);
         setInputValue(newValue.toString());
       }
     }
-    
+
     lastAngleRef.current = currentAngle;
   }, [isDragging, value, onChange]);
 
@@ -204,7 +204,7 @@ export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
-    
+
     const evaluated = evaluateMathExpression(newValue);
     if (evaluated !== null && evaluated >= 0.1 && evaluated <= 100) {
       const rounded = Math.round(evaluated * 100) / 100;
@@ -228,15 +228,15 @@ export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
     setInputValue('1');
   };
 
-  const sizeClasses = size === 'lg' 
-    ? 'w-24 h-24' 
+  const sizeClasses = size === 'lg'
+    ? 'w-24 h-24'
     : 'w-14 h-14';
 
   const tickCount = 12;
 
   return (
     <div className="flex items-center gap-3">
-      <div 
+      <div
         ref={dialRef}
         className={`relative ${sizeClasses} cursor-grab active:cursor-grabbing select-none touch-none`}
         onPointerDown={handlePointerDown}
@@ -247,7 +247,7 @@ export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
       >
         {/* Outer ring */}
         <div className="absolute inset-0 rounded-full bg-card border-2 border-border shadow-card" />
-        
+
         {/* Tick marks */}
         <div className="absolute inset-1">
           {Array.from({ length: tickCount }).map((_, i) => {
@@ -262,7 +262,7 @@ export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
                   height: '50%',
                 }}
               >
-                <div 
+                <div
                   className={`w-0.5 ${isMain ? 'h-2 bg-foreground/30' : 'h-1 bg-foreground/15'} rounded-full`}
                 />
               </div>
@@ -299,19 +299,16 @@ export function ScaleDial({ value, onChange, size = 'sm' }: ScaleDialProps) {
           className="w-16 text-center text-lg font-medium bg-transparent border-b border-border/50 focus:border-primary outline-none transition-colors"
           data-testid="scale-input"
         />
-        <span className="text-sm text-muted-foreground">×</span>
-        {value !== 1 && (
-          <motion.button
-            onClick={handleClear}
-            className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-            whileTap={{ scale: 0.9 }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            title="Reset to 1"
-          >
-            <X className="w-4 h-4" />
-          </motion.button>
-        )}
+        <motion.button
+          onClick={handleClear}
+          className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+          whileTap={{ scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          title="Reset to 1"
+        >
+          <X className="w-4 h-4" />
+        </motion.button>
       </div>
     </div>
   );
