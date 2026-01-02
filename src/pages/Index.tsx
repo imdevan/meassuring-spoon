@@ -36,7 +36,7 @@ export default function Index() {
   useEffect(() => {
     const hash = getUrlHash();
     const title = getUrlTitle();
-    
+
     if (hash) {
       const decoded = decodeRecipeFromHash(hash);
       if (decoded) {
@@ -76,16 +76,16 @@ export default function Index() {
   const handleToggleIngredient = useCallback((sectionId: string, ingredientId: string) => {
     setRecipe(prev => ({
       ...prev,
-      sections: prev.sections.map(section => 
+      sections: prev.sections.map(section =>
         section.id === sectionId
           ? {
-              ...section,
-              ingredients: section.ingredients.map(ing =>
-                ing.id === ingredientId
-                  ? { ...ing, checked: !ing.checked }
-                  : ing
-              ),
-            }
+            ...section,
+            ingredients: section.ingredients.map(ing =>
+              ing.id === ingredientId
+                ? { ...ing, checked: !ing.checked }
+                : ing
+            ),
+          }
           : section
       ),
     }));
@@ -94,23 +94,23 @@ export default function Index() {
   const handleChangeUnit = useCallback((sectionId: string, ingredientId: string, newUnit: string) => {
     setRecipe(prev => ({
       ...prev,
-      sections: prev.sections.map(section => 
+      sections: prev.sections.map(section =>
         section.id === sectionId
           ? {
-              ...section,
-              ingredients: section.ingredients.map(ing => {
-                if (ing.id !== ingredientId || !ing.unit || !ing.quantity) return ing;
-                
-                const converted = convertUnit(ing.quantity, ing.unit, newUnit);
-                if (converted === null) return ing;
-                
-                return {
-                  ...ing,
-                  quantity: converted,
-                  unit: newUnit,
-                };
-              }),
-            }
+            ...section,
+            ingredients: section.ingredients.map(ing => {
+              if (ing.id !== ingredientId || !ing.unit || !ing.quantity) return ing;
+
+              const converted = convertUnit(ing.quantity, ing.unit, newUnit);
+              if (converted === null) return ing;
+
+              return {
+                ...ing,
+                quantity: converted,
+                unit: newUnit,
+              };
+            }),
+          }
           : section
       ),
     }));
@@ -120,12 +120,12 @@ export default function Index() {
     setRecipe(prev => ({
       ...prev,
       sections: prev.sections
-        .map(section => 
+        .map(section =>
           section.id === sectionId
             ? {
-                ...section,
-                ingredients: section.ingredients.filter(ing => ing.id !== ingredientId),
-              }
+              ...section,
+              ingredients: section.ingredients.filter(ing => ing.id !== ingredientId),
+            }
             : section
         )
         .filter(section => section.ingredients.length > 0), // Remove empty sections
@@ -175,21 +175,21 @@ export default function Index() {
   const handlePrint = useCallback(() => {
     // Build plain text for printing
     const lines: string[] = [];
-    
+
     // Title
     if (recipe.title) {
       lines.push(recipe.title);
       lines.push('='.repeat(recipe.title.length));
       lines.push('');
     }
-    
+
     // Notes
     if (recipe.notes) {
       lines.push('Notes:');
       lines.push(recipe.notes);
       lines.push('');
     }
-    
+
     // Ingredients
     if (recipe.sections.length > 0) {
       lines.push('Ingredients:');
@@ -220,7 +220,7 @@ export default function Index() {
       }
       lines.push('');
     }
-    
+
     // Instructions
     if (recipe.instructions.length > 0) {
       lines.push('Instructions:');
@@ -228,7 +228,7 @@ export default function Index() {
         lines.push(`  ${idx + 1}. ${inst}`);
       });
     }
-    
+
     // Create a printable element
     const printContent = lines.join('\n');
     const printWindow = window.open('', '_blank');
@@ -255,7 +255,7 @@ export default function Index() {
       printWindow.document.close();
       printWindow.print();
     }
-    
+
     setIsMenuOpen(false);
   }, [recipe, scale, useFractions]);
 
@@ -335,7 +335,7 @@ export default function Index() {
                   </motion.div>
                 </motion.button>
               </div>
-              
+
               <IngredientList
                 sections={recipe.sections}
                 scale={scale}
@@ -353,8 +353,8 @@ export default function Index() {
               value={instructionsText}
               onChange={handleInstructionsChange}
               renderContent={() => (
-                <InstructionsList 
-                  instructions={recipe.instructions} 
+                <InstructionsList
+                  instructions={recipe.instructions}
                   onDeleteInstruction={handleDeleteInstruction}
                 />
               )}
