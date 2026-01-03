@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import type { ParsedSection } from '@/lib/parser';
 import { IngredientRow } from './IngredientRow';
 import { SwipeToDelete } from './SwipeToDelete';
+import { isImperialUnit } from '@/lib/units';
 
 interface IngredientListProps {
   sections: ParsedSection[];
@@ -24,6 +25,18 @@ export const IngredientList = forwardRef<HTMLDivElement, IngredientListProps>(fu
   if (sections.length === 0) {
     return null;
   }
+
+  // Detect if recipe uses imperial units by checking the first ingredient with a unit
+  const preferImperial = (() => {
+    for (const section of sections) {
+      for (const ingredient of section.ingredients) {
+        if (ingredient.unit) {
+          return isImperialUnit(ingredient.unit);
+        }
+      }
+    }
+    return true; // Default to imperial
+  })();
 
   return (
     <div className="space-y-6" data-testid="ingredient-list" ref={ref}>
@@ -47,6 +60,7 @@ export const IngredientList = forwardRef<HTMLDivElement, IngredientListProps>(fu
                   ingredient={ingredient}
                   scale={scale}
                   useFractions={useFractions}
+                  preferImperial={preferImperial}
                   onToggleChecked={() => onToggleIngredient(section.id, ingredient.id)}
                   onUnitChange={(newUnit) => onChangeUnit(section.id, ingredient.id, newUnit)}
                 />

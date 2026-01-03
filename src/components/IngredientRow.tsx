@@ -1,7 +1,7 @@
 import React, { forwardRef, useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
-import { UNITS, getCompatibleUnits, convertUnit, formatNumber } from '@/lib/units';
+import { UNITS, getCompatibleUnits, convertUnit, formatNumber, isImperialUnit } from '@/lib/units';
 import type { ParsedIngredient } from '@/lib/parser';
 import { Check, ChevronDown } from 'lucide-react';
 
@@ -9,6 +9,7 @@ interface IngredientRowProps {
   ingredient: ParsedIngredient;
   scale: number;
   useFractions: boolean;
+  preferImperial: boolean;
   onToggleChecked: () => void;
   onUnitChange: (newUnit: string) => void;
 }
@@ -17,6 +18,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
   ingredient,
   scale,
   useFractions,
+  preferImperial,
   onToggleChecked,
   onUnitChange,
 }, ref) {
@@ -36,7 +38,7 @@ export const IngredientRow = forwardRef<HTMLDivElement, IngredientRowProps>(func
 
   // Only show dropdown if ingredient has a recognized unit
   const hasUnit = ingredient.unit !== null;
-  const compatibleUnits = hasUnit ? getCompatibleUnits(ingredient.unit!) : [];
+  const compatibleUnits = hasUnit ? getCompatibleUnits(ingredient.unit!, preferImperial) : [];
 
   // Update dropdown position
   const updateDropdownPosition = () => {
