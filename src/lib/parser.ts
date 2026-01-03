@@ -39,34 +39,43 @@ function sanitizeInput(text: string): string {
   return cleaned.replace(/\s+/g, ' ').trim();
 }
 
-// Check if a line is a section header
+// Check if a line is a section header for ingredients
 function isSectionHeader(line: string): boolean {
   const headerPatterns = [
-    /^ingredients?:?$/i,
-    /^recipe:?$/i,
     /^for the /i,
     /^(cake|frosting|filling|sauce|topping|crust|dough|batter|glaze):?$/i,
   ];
   
   const clean = line.trim().toLowerCase();
   
-  // Short lines that end with : are likely headers
-  if (clean.length < 40 && clean.endsWith(':')) {
+  // Short lines that end with : are likely headers (but not if they're instructions headers)
+  if (clean.length < 40 && clean.endsWith(':') && !isInstructionsHeader(line)) {
     return true;
   }
   
   return headerPatterns.some(p => p.test(clean));
 }
 
+// Check if line is an ingredients header
+function isIngredientsHeader(line: string): boolean {
+  const patterns = [
+    /^ingredients?:?$/i,
+    /^recipe:?$/i,
+  ];
+  return patterns.some(p => p.test(line.trim()));
+}
+
+// Check if line is an instructions/steps header
+function isInstructionsHeader(line: string): boolean {
+  const patterns = [
+    /^(steps?|directions?|instructions?|method|how[- ]?to|procedures?|preparations?|guide|process):?$/i,
+  ];
+  return patterns.some(p => p.test(line.trim()));
+}
+
 // Check if line should be removed (top-level header)
 function isTopLevelHeader(line: string): boolean {
-  const topHeaders = [
-    /^ingredients?$/i,
-    /^recipe$/i,
-    /^directions?$/i,
-    /^instructions?$/i,
-  ];
-  return topHeaders.some(p => p.test(line.trim()));
+  return isIngredientsHeader(line) || isInstructionsHeader(line);
 }
 
 // Generate unique ID
@@ -234,7 +243,7 @@ function parseQuantityAndUnit(text: string): { quantity: number; unit: string | 
   };
 }
 
-// Parse full recipe text
+// Parse full recipe text - now with auto-detection of ingredients vs instructions sections
 export function parseRecipeText(text: string): ParsedRecipe {
   const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   
@@ -245,11 +254,37 @@ export function parseRecipeText(text: string): ParsedRecipe {
     ingredients: [],
   };
   
+  let mode: 'ingredients' | 'instructions' | 'auto' = 'auto';
+  const instructionLines: string[] = [];
+  
   for (const line of lines) {
-    // Skip top-level headers
-    if (isTopLevelHeader(line)) continue;
+    // Check for explicit section headers
+    if (isIngredientsHeader(line)) {
+      mode = 'ingredients';
+      continue;
+    }
     
-    // Check for section headers
+    if (isInstructionsHeader(line)) {
+      // Save current ingredient section before switching
+      if (currentSection.ingredients.length > 0) {
+        sections.push(currentSection);
+        currentSection = {
+          id: generateId(),
+          title: '',
+          ingredients: [],
+        };
+      }
+      mode = 'instructions';
+      continue;
+    }
+    
+    // Handle based on mode
+    if (mode === 'instructions') {
+      instructionLines.push(line);
+      continue;
+    }
+    
+    // Check for ingredient section headers (like "For the frosting:")
     if (isSectionHeader(line)) {
       if (currentSection.ingredients.length > 0) {
         sections.push(currentSection);
@@ -274,56 +309,30 @@ export function parseRecipeText(text: string): ParsedRecipe {
     sections.push(currentSection);
   }
   
+  // Parse collected instruction lines
+  const instructions = instructionLines.length > 0 
+    ? parseInstructions(instructionLines.join('\n\n'))
+    : [];
+  
   return {
     sections,
     notes: '',
-    instructions: [],
+    instructions,
     title: '',
   };
 }
 
-// Parse instructions text - splits by double newlines (paragraphs) or numbered steps
+// Parse instructions text - splits by double newlines (paragraphs)
 export function parseInstructions(text: string): string[] {
-  // First, try to split by double newlines (paragraphs)
-  const paragraphs = text.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
+  // Normalize line endings and split by double newlines (paragraphs)
+  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const paragraphs = normalized.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
   
-  // If we got multiple paragraphs, use those as steps
-  if (paragraphs.length > 1) {
-    return paragraphs.map(p => {
-      // Clean up each paragraph - remove numbering if present, normalize whitespace
-      return p
-        .replace(/^(\d+[.)]\s*|[-•]\s*)/, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-    });
-  }
-  
-  // Fallback: split by numbered steps or bullet points
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-  
-  const instructions: string[] = [];
-  let currentInstruction = '';
-  
-  for (const line of lines) {
-    // Check if line starts with a number or bullet
-    const isNewStep = /^(\d+[.)]\s*|[-•]\s*)/.test(line);
-    
-    if (isNewStep) {
-      if (currentInstruction) {
-        instructions.push(currentInstruction);
-      }
-      // Remove the number/bullet prefix
-      currentInstruction = line.replace(/^(\d+[.)]\s*|[-•]\s*)/, '');
-    } else if (currentInstruction) {
-      currentInstruction += ' ' + line;
-    } else {
-      currentInstruction = line;
-    }
-  }
-  
-  if (currentInstruction) {
-    instructions.push(currentInstruction);
-  }
-  
-  return instructions;
+  // Each paragraph becomes a step - clean up numbering and normalize whitespace
+  return paragraphs.map(p => {
+    return p
+      .replace(/^(\d+[.)]\s*|[-•]\s*)/, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }).filter(p => p.length > 0);
 }

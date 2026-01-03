@@ -2,17 +2,18 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Header } from '@/components/Header';
 import { SideMenu } from '@/components/SideMenu';
-import { DropZone } from '@/components/DropZone';
+import { DropZone, AddIngredientInput } from '@/components/DropZone';
 import { IngredientList } from '@/components/IngredientList';
 import { InstructionsList } from '@/components/InstructionsList';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
-import { parseRecipeText, parseInstructions, type ParsedRecipe } from '@/lib/parser';
+import { parseRecipeText, parseInstructions, parseIngredientLine, type ParsedRecipe } from '@/lib/parser';
 import { encodeRecipeToHash, decodeRecipeFromHash, updateUrlWithTitle, getUrlHash, getUrlTitle } from '@/lib/state';
 import { convertUnit, UNITS, formatNumber } from '@/lib/units';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Share2, Check } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function Index() {
   const [recipe, setRecipe] = useState<ParsedRecipe>({
@@ -265,6 +266,44 @@ export default function Index() {
     setIsMenuOpen(false);
   }, []);
 
+  const handleShareRecipe = useCallback(() => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      toast.success('Link copied to clipboard!');
+    }).catch(() => {
+      toast.error('Failed to copy link');
+    });
+  }, []);
+
+  const handleAddIngredient = useCallback((text: string) => {
+    // Parse the new ingredient lines
+    const lines = text.split('\n').filter(l => l.trim());
+    const newIngredients = lines.map(line => parseIngredientLine(line)).filter(Boolean);
+    
+    if (newIngredients.length === 0) return;
+    
+    setRecipe(prev => {
+      // Add to the last section, or create a new one if none exists
+      if (prev.sections.length === 0) {
+        return {
+          ...prev,
+          sections: [{
+            id: `section_${Date.now()}`,
+            title: '',
+            ingredients: newIngredients as any[],
+          }],
+        };
+      }
+      
+      const sections = [...prev.sections];
+      const lastSection = { ...sections[sections.length - 1] };
+      lastSection.ingredients = [...lastSection.ingredients, ...newIngredients as any[]];
+      sections[sections.length - 1] = lastSection;
+      
+      return { ...prev, sections };
+    });
+  }, []);
+
   const instructionsText = useMemo(() => {
     return recipe.instructions.map((inst, idx) => `${idx + 1}. ${inst}`).join('\n');
   }, [recipe.instructions]);
@@ -344,6 +383,8 @@ export default function Index() {
                 onChangeUnit={handleChangeUnit}
                 onDeleteIngredient={handleDeleteIngredient}
               />
+              
+              <AddIngredientInput onAdd={handleAddIngredient} />
             </div>
 
             {/* Instructions section */}
@@ -366,7 +407,19 @@ export default function Index() {
 
       {/* Footer */}
       <footer className="py-6 text-center text-sm text-muted-foreground no-print">
-        <p>Made with 🥄 for cooks who love precision</p>
+        {hasRecipe ? (
+          <motion.button
+            onClick={handleShareRecipe}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-secondary/50 transition-colors"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Share2 className="w-4 h-4" />
+            <span>Share this recipe</span>
+          </motion.button>
+        ) : (
+          <p>Made with 🥄 for cooks who love precision</p>
+        )}
       </footer>
 
       {/* Side menu */}

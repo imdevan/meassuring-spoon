@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, Clipboard, ArrowRight } from 'lucide-react';
+import { Upload, Clipboard, ArrowRight, Plus } from 'lucide-react';
 
 interface DropZoneProps {
   onTextReceived: (text: string) => void;
@@ -51,6 +51,14 @@ export function DropZone({ onTextReceived, isEmpty }: DropZoneProps) {
       setPasteText('');
     }
   }, [pasteText, onTextReceived]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Submit on cmd/ctrl+enter or shift+enter
+    if ((e.metaKey || e.ctrlKey || e.shiftKey) && e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }, [handleSubmit]);
 
   // Global paste handler for empty state
   const handleGlobalPaste = useCallback((e: React.ClipboardEvent) => {
@@ -112,6 +120,7 @@ export function DropZone({ onTextReceived, isEmpty }: DropZoneProps) {
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
             onPaste={handlePaste}
+            onKeyDown={handleKeyDown}
             placeholder="Paste ingredients here..."
             className="w-full h-40 p-4 rounded-xl bg-secondary/50 border border-border/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
             data-testid="paste-textarea"
@@ -133,6 +142,55 @@ export function DropZone({ onTextReceived, isEmpty }: DropZoneProps) {
         <p className="text-sm text-muted-foreground">
           Tip: You can also drag text directly from any website
         </p>
+      </div>
+    </motion.div>
+  );
+}
+
+// Subtle inline input for adding more ingredients
+interface AddIngredientInputProps {
+  onAdd: (text: string) => void;
+}
+
+export function AddIngredientInput({ onAdd }: AddIngredientInputProps) {
+  const [value, setValue] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+
+  const handleSubmit = useCallback(() => {
+    if (value.trim()) {
+      onAdd(value.trim());
+      setValue('');
+    }
+  }, [value, onAdd]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || ((e.metaKey || e.ctrlKey || e.shiftKey) && e.key === 'Enter')) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }, [handleSubmit]);
+
+  return (
+    <motion.div 
+      className="mt-2"
+      initial={false}
+      animate={{ 
+        opacity: isFocused || value ? 1 : 0.4,
+      }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="flex items-center gap-2">
+        <Plus className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          onKeyDown={handleKeyDown}
+          placeholder="Add more ingredients..."
+          className="flex-1 py-2 px-0 text-sm bg-transparent border-none outline-none placeholder:text-muted-foreground/50 focus:placeholder:text-muted-foreground/70"
+        />
       </div>
     </motion.div>
   );
