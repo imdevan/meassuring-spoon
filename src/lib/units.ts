@@ -26,7 +26,7 @@ export const UNITS: Record<string, UnitInfo> = {
   g: { name: 'gram', abbrev: ['g', 'gram', 'grams', 'gr'], category: 'weight', toBase: 1 },
   kg: { name: 'kilogram', abbrev: ['kg', 'kilogram', 'kilograms', 'kilo', 'kilos'], category: 'weight', toBase: 1000 },
   mg: { name: 'milligram', abbrev: ['mg', 'milligram', 'milligrams'], category: 'weight', toBase: 0.001 },
-  oz: { name: 'ounces', abbrev: ['ounce', 'ounces'], category: 'weight', toBase: 28.3495 },
+  massoz: { name: 'ounces', abbrev: ['ounce', 'ounces'], category: 'weight', toBase: 28.3495 },
   lb: { name: 'pound', abbrev: ['lb', 'lbs', 'pound', 'pounds'], category: 'weight', toBase: 453.592 },
 
   // Count units
@@ -115,8 +115,14 @@ export function decimalToFraction(value: number): string {
   const whole = Math.floor(value);
   const decimal = value - whole;
   
+  // If very close to a whole number, just return the whole
   if (decimal < 0.0625) {
     return whole.toString();
+  }
+  
+  // If very close to next whole number
+  if (decimal > 0.9375) {
+    return (whole + 1).toString();
   }
   
   // Find closest fraction
@@ -129,6 +135,15 @@ export function decimalToFraction(value: number): string {
       minDiff = diff;
       closest = [frac, sym];
     }
+  }
+  
+  // Only use fraction if close enough (within 0.04 of the fraction)
+  if (minDiff > 0.04) {
+    // Return as decimal instead
+    if (whole === 0) {
+      return value.toFixed(2).replace(/\.?0+$/, '');
+    }
+    return value.toFixed(2).replace(/\.?0+$/, '');
   }
   
   if (whole === 0) {

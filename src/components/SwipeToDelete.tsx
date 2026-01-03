@@ -1,6 +1,6 @@
 import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { Trash2 } from 'lucide-react';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useRef } from 'react';
 
 interface SwipeToDeleteProps {
   children: ReactNode;
@@ -8,21 +8,41 @@ interface SwipeToDeleteProps {
   threshold?: number;
 }
 
-export function SwipeToDelete({ children, onDelete, threshold = 120 }: SwipeToDeleteProps) {
+export function SwipeToDelete({ children, onDelete, threshold = 140 }: SwipeToDeleteProps) {
   const x = useMotionValue(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const hasDragged = useRef(false);
   
   // Background opacity based on swipe distance
   const backgroundOpacity = useTransform(x, [-threshold, -50, 0, 50, threshold], [1, 0.5, 0, 0.5, 1]);
   const backgroundColorLeft = useTransform(x, [0, threshold], ['hsl(var(--destructive) / 0)', 'hsl(var(--destructive) / 1)']);
   const backgroundColorRight = useTransform(x, [-threshold, 0], ['hsl(var(--destructive) / 1)', 'hsl(var(--destructive) / 0)']);
   
+  const handleDragStart = () => {
+    hasDragged.current = false;
+  };
+
+  const handleDrag = () => {
+    // Mark as dragged if moved more than 5px
+    if (Math.abs(x.get()) > 5) {
+      hasDragged.current = true;
+    }
+  };
+
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const swipeDistance = Math.abs(info.offset.x);
     if (swipeDistance > threshold) {
       setIsDeleting(true);
       // Animate off screen then delete
       setTimeout(onDelete, 200);
+    }
+  };
+
+  // Prevent click events from triggering if user was dragging
+  const handleClick = (e: React.MouseEvent) => {
+    if (hasDragged.current) {
+      e.preventDefault();
+      e.stopPropagation();
     }
   };
 
@@ -67,7 +87,10 @@ export function SwipeToDelete({ children, onDelete, threshold = 120 }: SwipeToDe
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.5}
+        onDragStart={handleDragStart}
+        onDrag={handleDrag}
         onDragEnd={handleDragEnd}
+        onClickCapture={handleClick}
         className="relative bg-card cursor-grab active:cursor-grabbing touch-pan-y"
       >
         {children}

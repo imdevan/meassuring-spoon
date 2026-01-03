@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Pencil, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -23,6 +23,16 @@ export const CollapsibleSection = forwardRef<HTMLDivElement, CollapsibleSectionP
   const [isEditing, setIsEditing] = useState(false);
 
   const hasContent = !!value || (renderContent && value);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Submit on cmd/ctrl+enter or shift+enter
+    if ((e.metaKey || e.ctrlKey || e.shiftKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (value) {
+        setIsEditing(false);
+      }
+    }
+  }, [value]);
 
   return (
     <div className="glass-card overflow-hidden" data-testid={testId} ref={ref}>
@@ -73,6 +83,7 @@ export const CollapsibleSection = forwardRef<HTMLDivElement, CollapsibleSectionP
                 <textarea
                   value={value}
                   onChange={(e) => onChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   placeholder={placeholder}
                   className="w-full min-h-[120px] p-4 rounded-xl bg-secondary/50 border border-border/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                   autoFocus={isEditing}
