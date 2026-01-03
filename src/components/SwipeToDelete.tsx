@@ -8,10 +8,11 @@ interface SwipeToDeleteProps {
   threshold?: number;
 }
 
-export function SwipeToDelete({ children, onDelete, threshold = 140 }: SwipeToDeleteProps) {
+export function SwipeToDelete({ children, onDelete, threshold = 200 }: SwipeToDeleteProps) {
   const x = useMotionValue(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const hasDragged = useRef(false);
+  const isDragging = useRef(false);
   
   // Background opacity based on swipe distance
   const backgroundOpacity = useTransform(x, [-threshold, -50, 0, 50, threshold], [1, 0.5, 0, 0.5, 1]);
@@ -20,6 +21,7 @@ export function SwipeToDelete({ children, onDelete, threshold = 140 }: SwipeToDe
   
   const handleDragStart = () => {
     hasDragged.current = false;
+    isDragging.current = true;
   };
 
   const handleDrag = () => {
@@ -30,17 +32,23 @@ export function SwipeToDelete({ children, onDelete, threshold = 140 }: SwipeToDe
   };
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    isDragging.current = false;
     const swipeDistance = Math.abs(info.offset.x);
     if (swipeDistance > threshold) {
       setIsDeleting(true);
       // Animate off screen then delete
       setTimeout(onDelete, 200);
+    } else {
+      // Reset hasDragged after animation completes so clicks work again
+      setTimeout(() => {
+        hasDragged.current = false;
+      }, 350);
     }
   };
 
   // Prevent click events from triggering if user was dragging
   const handleClick = (e: React.MouseEvent) => {
-    if (hasDragged.current) {
+    if (hasDragged.current || isDragging.current) {
       e.preventDefault();
       e.stopPropagation();
     }

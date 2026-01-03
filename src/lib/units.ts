@@ -72,16 +72,55 @@ export function convertUnit(value: number, fromUnit: string, toUnit: string): nu
   return null;
 }
 
+// Imperial volume units in preferred order
+const IMPERIAL_VOLUME_ORDER = ['tsp', 'tbsp', 'floz', 'cup', 'pint', 'quart', 'gallon'];
+// Metric volume units in preferred order
+const METRIC_VOLUME_ORDER = ['ml', 'l'];
+// Imperial weight units in preferred order
+const IMPERIAL_WEIGHT_ORDER = ['massoz', 'lb'];
+// Metric weight units in preferred order
+const METRIC_WEIGHT_ORDER = ['mg', 'g', 'kg'];
+
+// Detect if a unit is imperial or metric
+export function isImperialUnit(unitKey: string): boolean {
+  return IMPERIAL_VOLUME_ORDER.includes(unitKey) || IMPERIAL_WEIGHT_ORDER.includes(unitKey);
+}
+
 // Get compatible units for conversion (includes cross-category volume/weight)
-export function getCompatibleUnits(unitKey: string): string[] {
+// Orders based on whether original unit is imperial or metric
+export function getCompatibleUnits(unitKey: string, preferImperial: boolean = true): string[] {
   const unit = UNITS[unitKey];
   if (!unit) return [];
   
   // For volume and weight, show both categories
   if (unit.category === 'volume' || unit.category === 'weight') {
-    return Object.entries(UNITS)
+    const allUnits = Object.entries(UNITS)
       .filter(([key, u]) => (u.category === 'volume' || u.category === 'weight') && key !== unitKey)
       .map(([key]) => key);
+    
+    // Sort based on preference
+    return allUnits.sort((a, b) => {
+      const aUnit = UNITS[a];
+      const bUnit = UNITS[b];
+      
+      // Same category - sort by preferred order
+      if (aUnit.category === bUnit.category) {
+        if (aUnit.category === 'volume') {
+          const order = preferImperial 
+            ? [...IMPERIAL_VOLUME_ORDER, ...METRIC_VOLUME_ORDER]
+            : [...METRIC_VOLUME_ORDER, ...IMPERIAL_VOLUME_ORDER];
+          return order.indexOf(a) - order.indexOf(b);
+        } else {
+          const order = preferImperial
+            ? [...IMPERIAL_WEIGHT_ORDER, ...METRIC_WEIGHT_ORDER]
+            : [...METRIC_WEIGHT_ORDER, ...IMPERIAL_WEIGHT_ORDER];
+          return order.indexOf(a) - order.indexOf(b);
+        }
+      }
+      
+      // Different category - volume first
+      return aUnit.category === 'volume' ? -1 : 1;
+    });
   }
   
   // For other categories (count), only same category
