@@ -1,21 +1,27 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { SideMenu } from '@/components/SideMenu';
 import { DropZone, AddIngredientInput } from '@/components/DropZone';
 import { IngredientList } from '@/components/IngredientList';
 import { InstructionsList } from '@/components/InstructionsList';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
+import { ConversionMode } from '@/components/ConversionMode';
+import { ConversionPreview } from '@/components/ConversionPreview';
 import { parseRecipeText, parseInstructions, parseIngredientLine, type ParsedRecipe } from '@/lib/parser';
+import { isSingleMeasurement, parseSingleMeasurement, loadLastConversion, type ConversionInput } from '@/lib/conversion';
 import { encodeRecipeToHash, decodeRecipeFromHash, updateUrlWithTitle, getUrlHash, getUrlTitle } from '@/lib/state';
 import { convertUnit, UNITS, formatNumber } from '@/lib/units';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { RotateCcw, Share2, Check } from 'lucide-react';
+import { RotateCcw, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Index() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  
   const [recipe, setRecipe] = useState<ParsedRecipe>({
     sections: [],
     notes: '',
@@ -26,12 +32,26 @@ export default function Index() {
   const [useFractions, setUseFractions] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isResetSpinning, setIsResetSpinning] = useState(false);
+  
+  // Conversion mode state
+  const [isConversionMode, setIsConversionMode] = useState(false);
+  const [conversionInput, setConversionInput] = useState<ConversionInput>(loadLastConversion);
+  const [showConversionPreview, setShowConversionPreview] = useState(true);
 
   const { isActive: cookMode, isSupported: cookModeSupported, toggle: toggleCookMode } = useWakeLock();
   const { resolvedTheme, toggleTheme } = useTheme();
   const isMobile = useIsMobile();
 
   const hasRecipe = recipe.sections.length > 0;
+
+  // Check for convert query param on mount
+  useEffect(() => {
+    const convertParam = searchParams.get('convert');
+    if (convertParam === 'true' || convertParam === '1') {
+      setIsConversionMode(true);
+      setShowConversionPreview(false);
+    }
+  }, [searchParams]);
 
   // Load state from URL hash on mount
   useEffect(() => {
@@ -44,6 +64,7 @@ export default function Index() {
         setRecipe({ ...decoded.recipe, title });
         setScale(decoded.scale);
         setUseFractions(decoded.useFractions);
+        setShowConversionPreview(false);
       }
     }
   }, []);
@@ -53,19 +74,41 @@ export default function Index() {
     if (hasRecipe) {
       const hash = encodeRecipeToHash(recipe, scale, useFractions);
       updateUrlWithTitle(hash, recipe.title);
-    } else {
+    } else if (!isConversionMode) {
       updateUrlWithTitle('', '');
     }
-  }, [recipe, scale, useFractions, hasRecipe]);
+  }, [recipe, scale, useFractions, hasRecipe, isConversionMode]);
+
+  // Update URL when entering/leaving conversion mode
+  useEffect(() => {
+    if (isConversionMode && !hasRecipe) {
+      setSearchParams({ convert: '1' }, { replace: true });
+    } else if (!isConversionMode && !hasRecipe) {
+      setSearchParams({}, { replace: true });
+    }
+  }, [isConversionMode, hasRecipe, setSearchParams]);
 
   const handleTextReceived = useCallback((text: string) => {
+    // Check if this is a single measurement for conversion mode
+    if (isSingleMeasurement(text)) {
+      const parsed = parseSingleMeasurement(text);
+      if (parsed) {
+        setConversionInput(parsed);
+        setIsConversionMode(true);
+        setShowConversionPreview(false);
+        return;
+      }
+    }
+    
+    // Otherwise parse as recipe
     const parsed = parseRecipeText(text);
     setRecipe(parsed);
     setScale(1);
+    setIsConversionMode(false);
+    setShowConversionPreview(false);
   }, []);
 
   const handleScaleChange = useCallback((newScale: number) => {
-    // Accept any value between 0.1 and 100
     const clamped = Math.max(0.1, Math.min(100, newScale));
     setScale(clamped);
   }, []);
@@ -129,7 +172,7 @@ export default function Index() {
             }
             : section
         )
-        .filter(section => section.ingredients.length > 0), // Remove empty sections
+        .filter(section => section.ingredients.length > 0),
     }));
   }, []);
 
@@ -174,24 +217,20 @@ export default function Index() {
   }, []);
 
   const handlePrint = useCallback(() => {
-    // Build plain text for printing
     const lines: string[] = [];
 
-    // Title
     if (recipe.title) {
       lines.push(recipe.title);
       lines.push('='.repeat(recipe.title.length));
       lines.push('');
     }
 
-    // Notes
     if (recipe.notes) {
       lines.push('Notes:');
       lines.push(recipe.notes);
       lines.push('');
     }
 
-    // Ingredients
     if (recipe.sections.length > 0) {
       lines.push('Ingredients:');
       for (const section of recipe.sections) {
@@ -222,7 +261,6 @@ export default function Index() {
       lines.push('');
     }
 
-    // Instructions
     if (recipe.instructions.length > 0) {
       lines.push('Instructions:');
       recipe.instructions.forEach((inst, idx) => {
@@ -230,7 +268,6 @@ export default function Index() {
       });
     }
 
-    // Create a printable element
     const printContent = lines.join('\n');
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -264,6 +301,8 @@ export default function Index() {
     setRecipe({ sections: [], notes: '', instructions: [], title: '' });
     setScale(1);
     setIsMenuOpen(false);
+    setIsConversionMode(false);
+    setShowConversionPreview(true);
   }, []);
 
   const handleShareRecipe = useCallback(() => {
@@ -276,14 +315,12 @@ export default function Index() {
   }, []);
 
   const handleAddIngredient = useCallback((text: string) => {
-    // Parse the new ingredient lines
     const lines = text.split('\n').filter(l => l.trim());
     const newIngredients = lines.map(line => parseIngredientLine(line)).filter(Boolean);
     
     if (newIngredients.length === 0) return;
     
     setRecipe(prev => {
-      // Add to the last section, or create a new one if none exists
       if (prev.sections.length === 0) {
         return {
           ...prev,
@@ -302,6 +339,20 @@ export default function Index() {
       
       return { ...prev, sections };
     });
+  }, []);
+
+  const handleConversionInputChange = useCallback((input: ConversionInput) => {
+    setConversionInput(input);
+  }, []);
+
+  const handleCloseConversionMode = useCallback(() => {
+    setIsConversionMode(false);
+    setShowConversionPreview(true);
+  }, []);
+
+  const handleOpenConversionMode = useCallback(() => {
+    setIsConversionMode(true);
+    setShowConversionPreview(false);
   }, []);
 
   const instructionsText = useMemo(() => {
@@ -325,8 +376,37 @@ export default function Index() {
       />
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-8 space-y-6">
+        {/* Conversion Mode */}
+        <AnimatePresence mode="wait">
+          {isConversionMode && !hasRecipe && (
+            <ConversionMode
+              input={conversionInput}
+              onInputChange={handleConversionInputChange}
+              onClose={handleCloseConversionMode}
+              useFractions={useFractions}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Conversion preview above drop zone when not in conversion mode */}
+        {!isConversionMode && !hasRecipe && showConversionPreview && (
+          <motion.div 
+            className="flex justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <ConversionPreview
+              input={conversionInput}
+              useFractions={useFractions}
+              onClick={handleOpenConversionMode}
+            />
+          </motion.div>
+        )}
+
         {/* Drop zone / Empty state */}
-        <DropZone onTextReceived={handleTextReceived} isEmpty={!hasRecipe} />
+        {!isConversionMode && (
+          <DropZone onTextReceived={handleTextReceived} isEmpty={!hasRecipe} />
+        )}
 
         {/* Recipe content */}
         {hasRecipe && (
