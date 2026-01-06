@@ -109,7 +109,7 @@ export default function Index() {
   }, []);
 
   const handleScaleChange = useCallback((newScale: number) => {
-    const clamped = Math.max(0.1, Math.min(100, newScale));
+    const clamped = Math.max(0.01, Math.min(100, newScale));
     setScale(clamped);
   }, []);
 
