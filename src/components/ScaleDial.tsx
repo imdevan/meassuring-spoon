@@ -74,8 +74,8 @@ function evaluateMathExpression(expr: string): number | null {
 }
 
 function getRotationForValue(value: number): number {
-  // Clamp display value to 5 (max on dial)
-  const displayValue = Math.min(value, 5);
+  // Clamp display value to dial range (0.1 to 5)
+  const displayValue = Math.max(0.1, Math.min(value, 5));
 
   // Find the closest scale value for visual representation
   let closestIndex = 0;
@@ -206,7 +206,7 @@ export const ScaleDial = forwardRef<HTMLDivElement, ScaleDialProps>(function Sca
     setInputValue(newValue);
 
     const evaluated = evaluateMathExpression(newValue);
-    if (evaluated !== null && evaluated >= 0.1 && evaluated <= 100) {
+    if (evaluated !== null && evaluated >= 0.01 && evaluated <= 100) {
       const rounded = Math.round(evaluated * 100) / 100;
       onChange(rounded);
     }
@@ -214,7 +214,7 @@ export const ScaleDial = forwardRef<HTMLDivElement, ScaleDialProps>(function Sca
 
   const handleInputBlur = () => {
     const evaluated = evaluateMathExpression(inputValue);
-    if (evaluated !== null && evaluated >= 0.1 && evaluated <= 100) {
+    if (evaluated !== null && evaluated >= 0.01 && evaluated <= 100) {
       const rounded = Math.round(evaluated * 100) / 100;
       onChange(rounded);
       setInputValue(rounded.toString());
