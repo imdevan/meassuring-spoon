@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import type { ParsedSection } from '@/lib/parser';
 import { IngredientRow } from './IngredientRow';
 import { SwipeToDelete } from './SwipeToDelete';
+import { TotalVolume } from './TotalVolume';
 import { isImperialUnit } from '@/lib/units';
 
 interface IngredientListProps {
@@ -39,36 +40,44 @@ export const IngredientList = forwardRef<HTMLDivElement, IngredientListProps>(fu
   })();
 
   return (
-    <div className="space-y-6" data-testid="ingredient-list" ref={ref}>
-      {sections.map((section, sectionIdx) => (
-        <motion.div
-          key={section.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: sectionIdx * 0.1 }}
-        >
-          {section.title && (
-            <h3 className="text-lg mb-3 px-2">{section.title}</h3>
-          )}
-          <div className="space-y-1">
-            {section.ingredients.map((ingredient) => (
-              <SwipeToDelete
-                key={ingredient.id}
-                onDelete={() => onDeleteIngredient?.(section.id, ingredient.id)}
-              >
-                <IngredientRow
-                  ingredient={ingredient}
-                  scale={scale}
-                  useFractions={useFractions}
-                  preferImperial={preferImperial}
-                  onToggleChecked={() => onToggleIngredient(section.id, ingredient.id)}
-                  onUnitChange={(newUnit) => onChangeUnit(section.id, ingredient.id, newUnit)}
-                />
-              </SwipeToDelete>
-            ))}
-          </div>
-        </motion.div>
-      ))}
+    <div className="space-y-4" data-testid="ingredient-list" ref={ref}>
+      <div className="space-y-6">
+        {sections.map((section, sectionIdx) => (
+          <motion.div
+            key={section.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: sectionIdx * 0.1 }}
+          >
+            {section.title && (
+              <h3 className="text-lg mb-3 px-2">{section.title}</h3>
+            )}
+            <div className="space-y-1">
+              {section.ingredients.map((ingredient) => (
+                <SwipeToDelete
+                  key={ingredient.id}
+                  onDelete={() => onDeleteIngredient?.(section.id, ingredient.id)}
+                >
+                  <IngredientRow
+                    ingredient={ingredient}
+                    scale={scale}
+                    useFractions={useFractions}
+                    preferImperial={preferImperial}
+                    onToggleChecked={() => onToggleIngredient(section.id, ingredient.id)}
+                    onUnitChange={(newUnit) => onChangeUnit(section.id, ingredient.id, newUnit)}
+                  />
+                </SwipeToDelete>
+              ))}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+      
+      <TotalVolume
+        sections={sections}
+        scale={scale}
+        useFractions={useFractions}
+      />
     </div>
   );
 });
