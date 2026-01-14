@@ -6,10 +6,11 @@ import { SideMenu } from '@/components/SideMenu';
 import { DropZone, AddIngredientInput } from '@/components/DropZone';
 import { IngredientList } from '@/components/IngredientList';
 import { InstructionsList } from '@/components/InstructionsList';
+import { NotesList } from '@/components/NotesList';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { ConversionMode } from '@/components/ConversionMode';
 import { ConversionPreview } from '@/components/ConversionPreview';
-import { parseRecipeText, parseInstructions, parseIngredientLine, type ParsedRecipe } from '@/lib/parser';
+import { parseRecipeText, parseInstructions, parseIngredientLine, type ParsedRecipe, type ParsedIngredient } from '@/lib/parser';
 import { isSingleMeasurement, parseSingleMeasurement, loadLastConversion, type ConversionInput } from '@/lib/conversion';
 import { encodeRecipeToHash, decodeRecipeFromHash, updateUrlWithTitle, getUrlHash, getUrlTitle } from '@/lib/state';
 import { convertUnit, UNITS, formatNumber } from '@/lib/units';
@@ -180,6 +181,50 @@ export default function Index() {
     setRecipe(prev => ({
       ...prev,
       instructions: prev.instructions.filter((_, i) => i !== index),
+    }));
+  }, []);
+
+  const handleUpdateInstruction = useCallback((index: number, newText: string) => {
+    setRecipe(prev => ({
+      ...prev,
+      instructions: prev.instructions.map((inst, i) => i === index ? newText : inst),
+    }));
+  }, []);
+
+  const handleReorderInstructions = useCallback((newInstructions: string[]) => {
+    setRecipe(prev => ({
+      ...prev,
+      instructions: newInstructions,
+    }));
+  }, []);
+
+  const handleUpdateIngredient = useCallback((sectionId: string, ingredientId: string, newText: string) => {
+    const parsed = parseIngredientLine(newText);
+    if (!parsed) return;
+    
+    setRecipe(prev => ({
+      ...prev,
+      sections: prev.sections.map(section =>
+        section.id === sectionId
+          ? {
+            ...section,
+            ingredients: section.ingredients.map(ing =>
+              ing.id === ingredientId ? { ...parsed, id: ingredientId, checked: ing.checked } : ing
+            ),
+          }
+          : section
+      ),
+    }));
+  }, []);
+
+  const handleReorderIngredients = useCallback((sectionId: string, newIngredients: ParsedIngredient[]) => {
+    setRecipe(prev => ({
+      ...prev,
+      sections: prev.sections.map(section =>
+        section.id === sectionId
+          ? { ...section, ingredients: newIngredients }
+          : section
+      ),
     }));
   }, []);
 
@@ -427,14 +472,7 @@ export default function Index() {
               />
             </div>
 
-            {/* Notes section */}
-            <CollapsibleSection
-              title="Notes"
-              placeholder="Add any notes about this recipe..."
-              value={recipe.notes}
-              onChange={handleNotesChange}
-              testId="notes-section"
-            />
+            {/* Notes section - removed, now below instructions */}
 
             {/* Ingredients */}
             <div className="glass-card p-6">
@@ -462,6 +500,8 @@ export default function Index() {
                 onToggleIngredient={handleToggleIngredient}
                 onChangeUnit={handleChangeUnit}
                 onDeleteIngredient={handleDeleteIngredient}
+                onUpdateIngredient={handleUpdateIngredient}
+                onReorderIngredients={handleReorderIngredients}
               />
               
               <AddIngredientInput onAdd={handleAddIngredient} />
@@ -477,9 +517,26 @@ export default function Index() {
                 <InstructionsList
                   instructions={recipe.instructions}
                   onDeleteInstruction={handleDeleteInstruction}
+                  onUpdateInstruction={handleUpdateInstruction}
+                  onReorderInstructions={handleReorderInstructions}
                 />
               )}
               testId="instructions-section"
+            />
+
+            {/* Notes section */}
+            <CollapsibleSection
+              title="Notes"
+              placeholder="Add any notes about this recipe..."
+              value={recipe.notes}
+              onChange={handleNotesChange}
+              renderContent={() => (
+                <NotesList
+                  notes={recipe.notes}
+                  onUpdateNotes={handleNotesChange}
+                />
+              )}
+              testId="notes-section"
             />
           </motion.div>
         )}
