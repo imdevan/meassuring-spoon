@@ -73,9 +73,21 @@ function isInstructionsHeader(line: string): boolean {
   return patterns.some(p => p.test(line.trim()));
 }
 
+// Check if line is a notes header
+function isNotesHeader(line: string): boolean {
+  const patterns = [
+    /^(recipe\s+)?notes?:?$/i,
+    /^tips?:?$/i,
+    /^hints?:?$/i,
+    /^chef'?s?\s+notes?:?$/i,
+    /^cook'?s?\s+notes?:?$/i,
+  ];
+  return patterns.some(p => p.test(line.trim()));
+}
+
 // Check if line should be removed (top-level header)
 function isTopLevelHeader(line: string): boolean {
-  return isIngredientsHeader(line) || isInstructionsHeader(line);
+  return isIngredientsHeader(line) || isInstructionsHeader(line) || isNotesHeader(line);
 }
 
 // Generate unique ID
@@ -243,7 +255,7 @@ function parseQuantityAndUnit(text: string): { quantity: number; unit: string | 
   };
 }
 
-// Parse full recipe text - now with auto-detection of ingredients vs instructions sections
+// Parse full recipe text - now with auto-detection of ingredients vs instructions vs notes sections
 export function parseRecipeText(text: string): ParsedRecipe {
   const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   
@@ -254,8 +266,9 @@ export function parseRecipeText(text: string): ParsedRecipe {
     ingredients: [],
   };
   
-  let mode: 'ingredients' | 'instructions' | 'auto' = 'auto';
+  let mode: 'ingredients' | 'instructions' | 'notes' | 'auto' = 'auto';
   const instructionLines: string[] = [];
+  const notesLines: string[] = [];
   
   for (const line of lines) {
     // Check for explicit section headers
@@ -278,9 +291,28 @@ export function parseRecipeText(text: string): ParsedRecipe {
       continue;
     }
     
+    if (isNotesHeader(line)) {
+      // Save current ingredient section before switching
+      if (currentSection.ingredients.length > 0) {
+        sections.push(currentSection);
+        currentSection = {
+          id: generateId(),
+          title: '',
+          ingredients: [],
+        };
+      }
+      mode = 'notes';
+      continue;
+    }
+    
     // Handle based on mode
     if (mode === 'instructions') {
       instructionLines.push(line);
+      continue;
+    }
+    
+    if (mode === 'notes') {
+      notesLines.push(line);
       continue;
     }
     
@@ -314,9 +346,12 @@ export function parseRecipeText(text: string): ParsedRecipe {
     ? parseInstructions(instructionLines.join('\n\n'))
     : [];
   
+  // Join notes lines into a single notes string
+  const notes = notesLines.join('\n');
+  
   return {
     sections,
-    notes: '',
+    notes,
     instructions,
     title: '',
   };
