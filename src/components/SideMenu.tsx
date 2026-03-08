@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, forwardRef } from 'react';
-import { X, Sun, Moon, RotateCcw, Hash, Percent, Coffee, Printer, Trash2 } from 'lucide-react';
+import { X, Sun, Moon, RotateCcw, Hash, Percent, Coffee, Printer, Trash2, PanelLeft } from 'lucide-react';
 import { ScaleDial } from './ScaleDial';
 
 interface SideMenuProps {
