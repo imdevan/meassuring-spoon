@@ -575,27 +575,29 @@ export default function Index() {
 
             {/* Split view or single column */}
             {splitView && !isMobile ? (
-              <ResizablePanelGroup direction="horizontal" className="min-h-[600px] rounded-lg">
-                <ResizablePanel defaultSize={50} minSize={30}>
-                  <div className="h-full pr-2">
-                    {panelOrder === 'recipe-notes' ? renderRecipePanel() : renderNotesPanel()}
-                  </div>
-                </ResizablePanel>
-                <ResizableHandle withHandle className="mx-1">
-                  <button
-                    onClick={handleSwapPanels}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
-                    title="Swap panels"
-                  >
-                    <ArrowLeftRight className="w-4 h-4" />
-                  </button>
-                </ResizableHandle>
-                <ResizablePanel defaultSize={50} minSize={30}>
-                  <div className="h-full pl-2">
-                    {panelOrder === 'recipe-notes' ? renderNotesPanel() : renderRecipePanel()}
-                  </div>
-                </ResizablePanel>
-              </ResizablePanelGroup>
+              <div className="relative min-h-[600px]">
+                <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg">
+                  <ResizablePanel defaultSize={50} minSize={30}>
+                    <div className="h-full pr-2">
+                      {panelOrder === 'recipe-notes' ? renderRecipePanel() : renderNotesPanel()}
+                    </div>
+                  </ResizablePanel>
+                  <ResizableHandle withHandle className="mx-1" />
+                  <ResizablePanel defaultSize={50} minSize={30}>
+                    <div className="h-full pl-2">
+                      {panelOrder === 'recipe-notes' ? renderNotesPanel() : renderRecipePanel()}
+                    </div>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+                {/* Swap button overlay */}
+                <button
+                  onClick={handleSwapPanels}
+                  className="absolute top-4 left-1/2 -translate-x-1/2 z-10 p-2 rounded-full bg-secondary/80 hover:bg-secondary transition-colors shadow-md"
+                  title="Swap panels"
+                >
+                  <ArrowLeftRight className="w-4 h-4" />
+                </button>
+              </div>
             ) : (
               <>
                 {renderRecipePanel()}
