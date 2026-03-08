@@ -15,6 +15,8 @@ interface HeaderProps {
   onToggleTheme: () => void;
   hasRecipe: boolean;
   onOpenMenu?: () => void;
+  splitView?: boolean;
+  onToggleSplitView?: () => void;
 }
 
 interface TooltipButtonProps {
