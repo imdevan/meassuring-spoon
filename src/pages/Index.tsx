@@ -54,6 +54,22 @@ export default function Index() {
 
   const hasRecipe = recipe.sections.length > 0;
 
+  // Persist split view settings
+  useEffect(() => {
+    try { localStorage.setItem('splitView', String(splitView)); } catch {}
+  }, [splitView]);
+  useEffect(() => {
+    try { localStorage.setItem('panelOrder', panelOrder); } catch {}
+  }, [panelOrder]);
+
+  const handleToggleSplitView = useCallback(() => {
+    setSplitView(prev => !prev);
+  }, []);
+
+  const handleSwapPanels = useCallback(() => {
+    setPanelOrder(prev => prev === 'recipe-notes' ? 'notes-recipe' : 'recipe-notes');
+  }, []);
+
   // Check for convert query param on mount
   useEffect(() => {
     const convertParam = searchParams.get('convert');
