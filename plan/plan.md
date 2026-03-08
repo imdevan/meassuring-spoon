@@ -12,7 +12,7 @@ Store updates you implement at the END of this document in `# Updates`
 
 # v2.1.0
 
-- [ ] 1 Toggle side-by-side
+- [x] 1 Toggle side-by-side
   ui
     - icon button in the header
     - add to the side bar settings display as well
