@@ -10,6 +10,7 @@ import { NotesList } from '@/components/NotesList';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { ConversionMode } from '@/components/ConversionMode';
 import { ConversionPreview } from '@/components/ConversionPreview';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { parseRecipeText, parseInstructions, parseIngredientLine, type ParsedRecipe, type ParsedIngredient } from '@/lib/parser';
 import { isSingleMeasurement, parseSingleMeasurement, loadLastConversion, type ConversionInput } from '@/lib/conversion';
 import { encodeRecipeToHash, decodeRecipeFromHash, updateUrlWithTitle, getUrlHash, getUrlTitle } from '@/lib/state';
@@ -17,7 +18,7 @@ import { convertUnit, UNITS, formatNumber } from '@/lib/units';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { RotateCcw, Share2 } from 'lucide-react';
+import { RotateCcw, Share2, ArrowLeftRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Index() {
