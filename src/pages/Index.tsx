@@ -43,6 +43,12 @@ export default function Index() {
   const [panelOrder, setPanelOrder] = useState<'recipe-notes' | 'notes-recipe'>(() => {
     try { return (localStorage.getItem('panelOrder') as any) || 'recipe-notes'; } catch { return 'recipe-notes'; }
   });
+  const [panelSizes, setPanelSizes] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem('panelSizes');
+      return saved ? JSON.parse(saved) : [50, 50];
+    } catch { return [50, 50]; }
+  });
   
   // Conversion mode state
   const [isConversionMode, setIsConversionMode] = useState(false);
@@ -62,6 +68,13 @@ export default function Index() {
   useEffect(() => {
     try { localStorage.setItem('panelOrder', panelOrder); } catch {}
   }, [panelOrder]);
+  useEffect(() => {
+    try { localStorage.setItem('panelSizes', JSON.stringify(panelSizes)); } catch {}
+  }, [panelSizes]);
+
+  const handlePanelLayout = useCallback((sizes: number[]) => {
+    setPanelSizes(sizes);
+  }, []);
 
   const handleToggleSplitView = useCallback(() => {
     setSplitView(prev => !prev);
@@ -616,8 +629,8 @@ export default function Index() {
             {/* Split view or single column */}
             {splitView ? (
               <div className="relative min-h-[600px]">
-                <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg">
-                  <ResizablePanel defaultSize={50} minSize={30}>
+                <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg" onLayout={handlePanelLayout}>
+                  <ResizablePanel defaultSize={panelSizes[0]} minSize={30}>
                     <div className="h-full pr-2">
                       {panelOrder === 'recipe-notes' ? renderIngredientsNotesPanel() : renderInstructionsPanel()}
                     </div>
@@ -631,7 +644,7 @@ export default function Index() {
                       <ArrowLeftRight className="w-4 h-4" />
                     </button>
                   </ResizableHandle>
-                  <ResizablePanel defaultSize={50} minSize={30}>
+                  <ResizablePanel defaultSize={panelSizes[1]} minSize={30}>
                     <div className="h-full pl-2">
                       {panelOrder === 'recipe-notes' ? renderInstructionsPanel() : renderIngredientsNotesPanel()}
                     </div>
