@@ -579,13 +579,13 @@ export default function Index() {
                 <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg">
                   <ResizablePanel defaultSize={50} minSize={30}>
                     <div className="h-full pr-2">
-                      {panelOrder === 'recipe-notes' ? renderRecipePanel() : renderNotesPanel()}
+                      {panelOrder === 'recipe-notes' ? renderIngredientsNotesPanel() : renderInstructionsPanel()}
                     </div>
                   </ResizablePanel>
                   <ResizableHandle withHandle className="mx-1" />
                   <ResizablePanel defaultSize={50} minSize={30}>
                     <div className="h-full pl-2">
-                      {panelOrder === 'recipe-notes' ? renderNotesPanel() : renderRecipePanel()}
+                      {panelOrder === 'recipe-notes' ? renderInstructionsPanel() : renderIngredientsNotesPanel()}
                     </div>
                   </ResizablePanel>
                 </ResizablePanelGroup>
@@ -600,7 +600,55 @@ export default function Index() {
               </div>
             ) : (
               <>
-                {renderRecipePanel()}
+                {/* Ingredients */}
+                <div className="glass-card p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-display">Ingredients</h2>
+                    <motion.button
+                      onClick={handleResetCheckboxesWithAnimation}
+                      className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                      whileTap={{ scale: 0.95 }}
+                      title="Reset checkboxes"
+                    >
+                      <motion.div
+                        animate={{ rotate: isResetSpinning ? -360 : 0 }}
+                        transition={{ duration: 0.5, ease: 'easeInOut' }}
+                      >
+                        <RotateCcw className="w-5 h-5" />
+                      </motion.div>
+                    </motion.button>
+                  </div>
+
+                  <IngredientList
+                    sections={recipe.sections}
+                    scale={scale}
+                    useFractions={useFractions}
+                    onToggleIngredient={handleToggleIngredient}
+                    onChangeUnit={handleChangeUnit}
+                    onDeleteIngredient={handleDeleteIngredient}
+                    onUpdateIngredient={handleUpdateIngredient}
+                    onReorderIngredients={handleReorderIngredients}
+                  />
+                  
+                  <AddIngredientInput onAdd={handleAddIngredient} />
+                </div>
+
+                {/* Instructions section */}
+                <CollapsibleSection
+                  title="Instructions"
+                  placeholder="Paste recipe instructions here..."
+                  value={instructionsText}
+                  onChange={handleInstructionsChange}
+                  renderContent={() => (
+                    <InstructionsList
+                      instructions={recipe.instructions}
+                      onDeleteInstruction={handleDeleteInstruction}
+                      onUpdateInstruction={handleUpdateInstruction}
+                      onReorderInstructions={handleReorderInstructions}
+                    />
+                  )}
+                  testId="instructions-section"
+                />
                 
                 {/* Notes section (non-split view) */}
                 <CollapsibleSection
