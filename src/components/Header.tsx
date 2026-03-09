@@ -162,6 +162,14 @@ export function Header({
             {hasRecipe && (
               <>
                 <ScaleDial value={scale} onChange={onScaleChange} size="sm" />
+                {onOpenConverter && (
+                  <TooltipButton
+                    onClick={onOpenConverter}
+                    tooltip="Unit converter"
+                  >
+                    <Scale className="w-4 h-4" />
+                  </TooltipButton>
+                )}
                 {onToggleSplitView && (
                   <TooltipButton
                     onClick={onToggleSplitView}
