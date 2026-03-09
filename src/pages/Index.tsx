@@ -619,14 +619,6 @@ export default function Index() {
                     </div>
                   </ResizablePanel>
                 </ResizablePanelGroup>
-                {/* Swap button overlay */}
-                <button
-                  onClick={handleSwapPanels}
-                  className="absolute top-4 left-1/2 -translate-x-1/2 z-10 p-2 rounded-full bg-secondary/80 hover:bg-secondary transition-colors shadow-md"
-                  title="Swap panels"
-                >
-                  <ArrowLeftRight className="w-4 h-4" />
-                </button>
               </div>
             ) : (
               <>
