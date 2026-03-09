@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { SideMenu } from '@/components/SideMenu';
-import { DropZone, AddIngredientInput } from '@/components/DropZone';
+import { DropZone, AddIngredientInput, saveRecentSearch } from '@/components/DropZone';
 import { IngredientList } from '@/components/IngredientList';
 import { InstructionsList } from '@/components/InstructionsList';
 import { NotesList } from '@/components/NotesList';
