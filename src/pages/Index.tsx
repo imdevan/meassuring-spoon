@@ -525,7 +525,7 @@ export default function Index() {
         />
         <textarea
           value={instructionsText}
-          onChange={handleInstructionsChange}
+          onChange={(e) => handleInstructionsChange(e.target.value)}
           placeholder="Paste recipe instructions here..."
           className="w-full min-h-[120px] mt-4 p-4 rounded-xl bg-secondary/50 border border-border/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
         />
