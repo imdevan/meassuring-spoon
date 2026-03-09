@@ -145,6 +145,15 @@ export default function Index() {
     }
   }, [recipe, scale, useFractions, hasRecipe, isConversionMode]);
 
+  // Update page title based on recipe title
+  useEffect(() => {
+    if (recipe.title) {
+      document.title = `${recipe.title} | Measuring Spoon`;
+    } else {
+      document.title = 'Measuring Spoon - Recipe Scaling Made Simple';
+    }
+  }, [recipe.title]);
+
   // Update URL when entering/leaving conversion mode
   useEffect(() => {
     if (isConversionMode && !hasRecipe) {
