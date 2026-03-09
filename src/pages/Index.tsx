@@ -429,8 +429,8 @@ export default function Index() {
     return recipe.instructions.map((inst, idx) => `${idx + 1}. ${inst}`).join('\n');
   }, [recipe.instructions]);
 
-  // Render the recipe panel (ingredients + instructions)
-  const renderRecipePanel = () => (
+  // Render the ingredients + notes panel
+  const renderIngredientsNotesPanel = () => (
     <div className="space-y-6 h-full overflow-y-auto">
       {/* Ingredients */}
       <div className="glass-card p-6">
@@ -465,7 +465,26 @@ export default function Index() {
         <AddIngredientInput onAdd={handleAddIngredient} />
       </div>
 
-      {/* Instructions section */}
+      {/* Notes section */}
+      <div className="glass-card p-6">
+        <h2 className="text-xl font-display mb-4">Notes</h2>
+        <NotesList
+          notes={recipe.notes}
+          onUpdateNotes={handleNotesChange}
+        />
+        <textarea
+          value={recipe.notes}
+          onChange={(e) => handleNotesChange(e.target.value)}
+          placeholder="Add any notes about this recipe..."
+          className="w-full min-h-[120px] mt-4 p-4 rounded-xl bg-secondary/50 border border-border/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+        />
+      </div>
+    </div>
+  );
+
+  // Render the instructions panel
+  const renderInstructionsPanel = () => (
+    <div className="h-full overflow-y-auto">
       <CollapsibleSection
         title="Instructions"
         placeholder="Paste recipe instructions here..."
@@ -481,25 +500,6 @@ export default function Index() {
         )}
         testId="instructions-section"
       />
-    </div>
-  );
-
-  // Render the notes panel
-  const renderNotesPanel = () => (
-    <div className="h-full overflow-y-auto">
-      <div className="glass-card p-6 h-full">
-        <h2 className="text-xl font-display mb-4">Notes</h2>
-        <NotesList
-          notes={recipe.notes}
-          onUpdateNotes={handleNotesChange}
-        />
-        <textarea
-          value={recipe.notes}
-          onChange={(e) => handleNotesChange(e.target.value)}
-          placeholder="Add any notes about this recipe..."
-          className="w-full min-h-[120px] mt-4 p-4 rounded-xl bg-secondary/50 border border-border/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-        />
-      </div>
     </div>
   );
 
