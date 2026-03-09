@@ -93,9 +93,9 @@ export default function Index() {
     }
   }, [searchParams]);
 
-  // Load state from URL hash on mount, or fetch from ?recipe= param
+  // Load state from URL hash on mount, or fetch from ?recipe= or ?r= param
   useEffect(() => {
-    const urlParam = searchParams.get('recipe');
+    const urlParam = searchParams.get('recipe') || searchParams.get('r');
     if (urlParam) {
       // Fetch recipe from URL param
       scrapeRecipeFromUrl(urlParam).then((scraped) => {
