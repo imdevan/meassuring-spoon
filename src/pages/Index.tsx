@@ -103,6 +103,7 @@ export default function Index() {
         const urlNote = `Source: ${sourceUrl}`;
         const existingNotes = scrapedRecipe.notes ? scrapedRecipe.notes.trim() : '';
         scrapedRecipe.notes = existingNotes ? `${urlNote}\n${existingNotes}` : urlNote;
+        saveRecentSearch(urlParam, scrapedRecipe.title || undefined);
         setRecipe(scrapedRecipe);
         setScale(1);
         setIsConversionMode(false);
