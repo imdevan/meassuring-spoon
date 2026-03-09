@@ -565,7 +565,7 @@ export default function Index() {
 
         {/* Drop zone / Empty state */}
         {!isConversionMode && (
-          <DropZone onTextReceived={handleTextReceived} isEmpty={!hasRecipe} />
+          <DropZone onTextReceived={handleTextReceived} onRecipeScraped={handleRecipeScraped} isEmpty={!hasRecipe} />
         )}
 
         {/* Recipe content */}
