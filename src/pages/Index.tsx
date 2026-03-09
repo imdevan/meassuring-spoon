@@ -93,9 +93,9 @@ export default function Index() {
     }
   }, [searchParams]);
 
-  // Load state from URL hash on mount, or fetch from ?url= param
+  // Load state from URL hash on mount, or fetch from ?recipe= param
   useEffect(() => {
-    const urlParam = searchParams.get('url');
+    const urlParam = searchParams.get('recipe');
     if (urlParam) {
       // Fetch recipe from URL param
       scrapeRecipeFromUrl(urlParam).then((scraped) => {
@@ -107,10 +107,10 @@ export default function Index() {
         setScale(1);
         setIsConversionMode(false);
         setShowConversionPreview(false);
-        // Remove url param from URL after loading
+        // Remove recipe param from URL after loading
         setSearchParams((prev) => {
           const next = new URLSearchParams(prev);
-          next.delete('url');
+          next.delete('recipe');
           return next;
         }, { replace: true });
         toast.success('Recipe imported successfully!');
