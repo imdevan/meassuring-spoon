@@ -1,8 +1,29 @@
 import { useState, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Upload, Clipboard, ArrowRight, Plus, Link, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Upload, Clipboard, ArrowRight, Plus, Link, Loader2, Clock, X } from 'lucide-react';
 import { isUrl, scrapeRecipeFromUrl, type ScrapedRecipe } from '@/lib/scraper';
 import { toast } from 'sonner';
+
+const RECENT_SEARCHES_KEY = 'recentSearches';
+const MAX_RECENT = 8;
+
+interface RecentSearch {
+  url: string;
+  title?: string;
+  timestamp: number;
+}
+
+function loadRecentSearches(): RecentSearch[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]');
+  } catch { return []; }
+}
+
+export function saveRecentSearch(url: string, title?: string) {
+  const searches = loadRecentSearches().filter(s => s.url !== url);
+  searches.unshift({ url, title, timestamp: Date.now() });
+  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(searches.slice(0, MAX_RECENT)));
+}
 
 interface DropZoneProps {
   onTextReceived: (text: string) => void;
