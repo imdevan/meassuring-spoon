@@ -18,7 +18,8 @@ import { convertUnit, UNITS, formatNumber } from '@/lib/units';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { RotateCcw, Share2, ArrowLeftRight } from 'lucide-react';
+import { useLongPress } from '@/hooks/useLongPress';
+import { RotateCcw, Share2, GripHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Index() {
