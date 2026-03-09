@@ -17,6 +17,7 @@ interface HeaderProps {
   onOpenMenu?: () => void;
   splitView?: boolean;
   onToggleSplitView?: () => void;
+  onOpenConverter?: () => void;
 }
 
 interface TooltipButtonProps {
