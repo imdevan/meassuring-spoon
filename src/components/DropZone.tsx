@@ -35,6 +35,7 @@ export function DropZone({ onTextReceived, onRecipeScraped, isEmpty }: DropZoneP
   const [isDragOver, setIsDragOver] = useState(false);
   const [pasteText, setPasteText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(loadRecentSearches);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmitUrl = useCallback(async (url: string) => {
@@ -42,6 +43,8 @@ export function DropZone({ onTextReceived, onRecipeScraped, isEmpty }: DropZoneP
     setIsLoading(true);
     try {
       const scraped = await scrapeRecipeFromUrl(url);
+      saveRecentSearch(url, scraped.recipe.title || undefined);
+      setRecentSearches(loadRecentSearches());
       onRecipeScraped(scraped);
       setPasteText('');
       toast.success('Recipe imported successfully!');
@@ -51,6 +54,17 @@ export function DropZone({ onTextReceived, onRecipeScraped, isEmpty }: DropZoneP
       setIsLoading(false);
     }
   }, [onRecipeScraped]);
+
+  const handleRemoveRecent = useCallback((url: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = loadRecentSearches().filter(s => s.url !== url);
+    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+    setRecentSearches(updated);
+  }, []);
+
+  const handleClickRecent = useCallback((url: string) => {
+    handleSubmitUrl(url);
+  }, [handleSubmitUrl]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
