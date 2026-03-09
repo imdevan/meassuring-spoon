@@ -226,6 +226,35 @@ export function DropZone({ onTextReceived, onRecipeScraped, isEmpty }: DropZoneP
           </div>
         )}
 
+        {!isLoading && recentSearches.length > 0 && (
+          <div className="w-full max-w-md space-y-2">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Clock className="w-3 h-3" />
+              <span>Recent</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {recentSearches.map((search) => {
+                const displayName = search.title || new URL(search.url).hostname.replace('www.', '');
+                return (
+                  <motion.button
+                    key={search.url}
+                    onClick={() => handleClickRecent(search.url)}
+                    className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/70 border border-border/50 text-xs text-foreground/80 hover:bg-secondary hover:border-border transition-colors max-w-[200px]"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="truncate">{displayName}</span>
+                    <X
+                      className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                      onClick={(e) => handleRemoveRecent(search.url, e)}
+                    />
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {!isLoading && (
           <p className="text-sm text-muted-foreground">
             Tip: You can also drag text directly from any website
