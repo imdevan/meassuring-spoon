@@ -18,8 +18,7 @@ import { convertUnit, UNITS, formatNumber } from '@/lib/units';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useLongPress } from '@/hooks/useLongPress';
-import { RotateCcw, Share2, GripHorizontal } from 'lucide-react';
+import { RotateCcw, Share2, ArrowLeftRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Index() {
@@ -69,7 +68,6 @@ export default function Index() {
 
   const handleSwapPanels = useCallback(() => {
     setPanelOrder(prev => prev === 'recipe-notes' ? 'notes-recipe' : 'recipe-notes');
-    toast.success('Panels swapped');
   }, []);
 
   // Check for convert query param on mount
@@ -431,33 +429,13 @@ export default function Index() {
     return recipe.instructions.map((inst, idx) => `${idx + 1}. ${inst}`).join('\n');
   }, [recipe.instructions]);
 
-  // Drag handle for panels
-  const ingredientsNotesLongPress = useLongPress({
-    onLongPress: handleSwapPanels,
-    onClick: handleSwapPanels,
-    delay: 500,
-  });
-
-  const instructionsLongPress = useLongPress({
-    onLongPress: handleSwapPanels,
-    onClick: handleSwapPanels,
-    delay: 500,
-  });
-
   // Render the ingredients + notes panel
   const renderIngredientsNotesPanel = () => (
     <div className="space-y-6 h-full overflow-y-auto">
       {/* Ingredients */}
       <div className="glass-card p-6">
-        {/* Draggable header */}
-        <div 
-          className="flex items-center justify-between mb-4 cursor-grab active:cursor-grabbing select-none"
-          {...ingredientsNotesLongPress.handlers}
-        >
-          <div className="flex items-center gap-2">
-            <GripHorizontal className={`w-5 h-5 transition-colors ${ingredientsNotesLongPress.isPressed ? 'text-primary' : 'text-muted-foreground/30'}`} />
-            <h2 className="text-xl font-display">Ingredients</h2>
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-display">Ingredients</h2>
           <motion.button
             onClick={handleResetCheckboxesWithAnimation}
             className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
@@ -507,29 +485,21 @@ export default function Index() {
   // Render the instructions panel
   const renderInstructionsPanel = () => (
     <div className="h-full overflow-y-auto">
-      <div className="glass-card p-6">
-        {/* Draggable header */}
-        <div 
-          className="flex items-center gap-2 mb-4 cursor-grab active:cursor-grabbing select-none"
-          {...instructionsLongPress.handlers}
-        >
-          <GripHorizontal className={`w-5 h-5 transition-colors ${instructionsLongPress.isPressed ? 'text-primary' : 'text-muted-foreground/30'}`} />
-          <h2 className="text-xl font-display">Instructions</h2>
-        </div>
-        
-        <InstructionsList
-          instructions={recipe.instructions}
-          onDeleteInstruction={handleDeleteInstruction}
-          onUpdateInstruction={handleUpdateInstruction}
-          onReorderInstructions={handleReorderInstructions}
-        />
-        <textarea
-          value={instructionsText}
-          onChange={(e) => handleInstructionsChange(e.target.value)}
-          placeholder="Paste recipe instructions here..."
-          className="w-full min-h-[120px] mt-4 p-4 rounded-xl bg-secondary/50 border border-border/50 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-        />
-      </div>
+      <CollapsibleSection
+        title="Instructions"
+        placeholder="Paste recipe instructions here..."
+        value={instructionsText}
+        onChange={handleInstructionsChange}
+        renderContent={() => (
+          <InstructionsList
+            instructions={recipe.instructions}
+            onDeleteInstruction={handleDeleteInstruction}
+            onUpdateInstruction={handleUpdateInstruction}
+            onReorderInstructions={handleReorderInstructions}
+          />
+        )}
+        testId="instructions-section"
+      />
     </div>
   );
 
@@ -619,6 +589,14 @@ export default function Index() {
                     </div>
                   </ResizablePanel>
                 </ResizablePanelGroup>
+                {/* Swap button overlay */}
+                <button
+                  onClick={handleSwapPanels}
+                  className="absolute top-4 left-1/2 -translate-x-1/2 z-10 p-2 rounded-full bg-secondary/80 hover:bg-secondary transition-colors shadow-md"
+                  title="Swap panels"
+                >
+                  <ArrowLeftRight className="w-4 h-4" />
+                </button>
               </div>
             ) : (
               <>
