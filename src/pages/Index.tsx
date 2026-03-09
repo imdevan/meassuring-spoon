@@ -14,6 +14,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { parseRecipeText, parseInstructions, parseIngredientLine, type ParsedRecipe, type ParsedIngredient } from '@/lib/parser';
 import { isSingleMeasurement, parseSingleMeasurement, loadLastConversion, type ConversionInput } from '@/lib/conversion';
 import { encodeRecipeToHash, decodeRecipeFromHash, updateUrlWithTitle, getUrlHash, getUrlTitle } from '@/lib/state';
+import { type ScrapedRecipe } from '@/lib/scraper';
 import { convertUnit, UNITS, formatNumber } from '@/lib/units';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { useTheme } from '@/hooks/useTheme';
@@ -129,6 +130,19 @@ export default function Index() {
     // Otherwise parse as recipe
     const parsed = parseRecipeText(text);
     setRecipe(parsed);
+    setScale(1);
+    setIsConversionMode(false);
+    setShowConversionPreview(false);
+  }, []);
+
+  const handleRecipeScraped = useCallback((scraped: ScrapedRecipe) => {
+    const { recipe: scrapedRecipe, sourceUrl } = scraped;
+    // Prepend source URL to notes
+    const urlNote = `Source: ${sourceUrl}`;
+    const existingNotes = scrapedRecipe.notes ? scrapedRecipe.notes.trim() : '';
+    scrapedRecipe.notes = existingNotes ? `${urlNote}\n${existingNotes}` : urlNote;
+    
+    setRecipe(scrapedRecipe);
     setScale(1);
     setIsConversionMode(false);
     setShowConversionPreview(false);
@@ -551,7 +565,7 @@ export default function Index() {
 
         {/* Drop zone / Empty state */}
         {!isConversionMode && (
-          <DropZone onTextReceived={handleTextReceived} isEmpty={!hasRecipe} />
+          <DropZone onTextReceived={handleTextReceived} onRecipeScraped={handleRecipeScraped} isEmpty={!hasRecipe} />
         )}
 
         {/* Recipe content */}
