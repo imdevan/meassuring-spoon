@@ -1,8 +1,29 @@
 import { useState, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Upload, Clipboard, ArrowRight, Plus, Link, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Upload, Clipboard, ArrowRight, Plus, Link, Loader2, Clock, X } from 'lucide-react';
 import { isUrl, scrapeRecipeFromUrl, type ScrapedRecipe } from '@/lib/scraper';
 import { toast } from 'sonner';
+
+const RECENT_SEARCHES_KEY = 'recentSearches';
+const MAX_RECENT = 8;
+
+interface RecentSearch {
+  url: string;
+  title?: string;
+  timestamp: number;
+}
+
+function loadRecentSearches(): RecentSearch[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]');
+  } catch { return []; }
+}
+
+export function saveRecentSearch(url: string, title?: string) {
+  const searches = loadRecentSearches().filter(s => s.url !== url);
+  searches.unshift({ url, title, timestamp: Date.now() });
+  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(searches.slice(0, MAX_RECENT)));
+}
 
 interface DropZoneProps {
   onTextReceived: (text: string) => void;
@@ -14,6 +35,7 @@ export function DropZone({ onTextReceived, onRecipeScraped, isEmpty }: DropZoneP
   const [isDragOver, setIsDragOver] = useState(false);
   const [pasteText, setPasteText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(loadRecentSearches);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmitUrl = useCallback(async (url: string) => {
@@ -21,6 +43,8 @@ export function DropZone({ onTextReceived, onRecipeScraped, isEmpty }: DropZoneP
     setIsLoading(true);
     try {
       const scraped = await scrapeRecipeFromUrl(url);
+      saveRecentSearch(url, scraped.recipe.title || undefined);
+      setRecentSearches(loadRecentSearches());
       onRecipeScraped(scraped);
       setPasteText('');
       toast.success('Recipe imported successfully!');
@@ -30,6 +54,17 @@ export function DropZone({ onTextReceived, onRecipeScraped, isEmpty }: DropZoneP
       setIsLoading(false);
     }
   }, [onRecipeScraped]);
+
+  const handleRemoveRecent = useCallback((url: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = loadRecentSearches().filter(s => s.url !== url);
+    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+    setRecentSearches(updated);
+  }, []);
+
+  const handleClickRecent = useCallback((url: string) => {
+    handleSubmitUrl(url);
+  }, [handleSubmitUrl]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -188,6 +223,35 @@ export function DropZone({ onTextReceived, onRecipeScraped, isEmpty }: DropZoneP
                 </>
               )}
             </motion.button>
+          </div>
+        )}
+
+        {!isLoading && recentSearches.length > 0 && (
+          <div className="w-full max-w-md space-y-2">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Clock className="w-3 h-3" />
+              <span>Recent</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {recentSearches.map((search) => {
+                const displayName = search.title || new URL(search.url).hostname.replace('www.', '');
+                return (
+                  <motion.button
+                    key={search.url}
+                    onClick={() => handleClickRecent(search.url)}
+                    className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/70 border border-border/50 text-xs text-foreground/80 hover:bg-secondary hover:border-border transition-colors max-w-[200px]"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="truncate">{displayName}</span>
+                    <X
+                      className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                      onClick={(e) => handleRemoveRecent(search.url, e)}
+                    />
+                  </motion.button>
+                );
+              })}
+            </div>
           </div>
         )}
 
