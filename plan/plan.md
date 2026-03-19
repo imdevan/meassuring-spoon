@@ -36,6 +36,13 @@ Store updates you implement at the END of this document in `# Updates`
 
   Alternative: have the left be scrollable like the right is. But only the unit not the value
 
+
+- [ ] click and drag the end of the timer line to adjust the time remaining. 
+  - show moveable circle at the end end the timer line. Match the current atheistic 
+  - if the timer has already ended move the timer back to the adjust timer spot and adjust the time remaining. and resume the timer
+  - if the time has not already ended adjust the time forward or backward depending on where the user adjusts the time to
+
+6 snooze + 1, 5, 10 min, or repeat
   
 # Updates
 
