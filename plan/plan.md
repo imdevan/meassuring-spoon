@@ -42,7 +42,7 @@ Store updates you implement at the END of this document in `# Updates`
   - if the timer has already ended move the timer back to the adjust timer spot and adjust the time remaining. and resume the timer
   - if the time has not already ended adjust the time forward or backward depending on where the user adjusts the time to
 
-6 snooze + 1, 5, 10 min, or repeat
+- [ ] 6 snooze + 1, 5, 10 min, or repeat
   
 # Updates
 
